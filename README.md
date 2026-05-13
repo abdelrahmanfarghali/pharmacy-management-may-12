@@ -19,20 +19,6 @@
 
 This repository contains the source code and custom modules for the Odoo 18.0 implementation. All contributors must follow the branching model, commit conventions, and review process described in this document to maintain a clean, traceable project history.
 
----
-
-## Tech Stack
-
-| Layer       | Technology          | Version   |
-|-------------|---------------------|-----------|
-| Backend     | Python / Odoo ORM   | 3.11 / 18.0 |
-| Database    | PostgreSQL          | 15+       |
-| Frontend    | OWL / QWeb          | Odoo 18.0 |
-| Runtime     | Node.js             | 18 LTS    |
-| VCS         | Git                 | 2.38+     |
-
----
-
 ## Getting Started
 
 ```bash

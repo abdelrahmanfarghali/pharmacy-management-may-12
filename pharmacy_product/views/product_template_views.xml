@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ════════════════════════════════════════════════════
+         UC-01 + UC-02 — Product Template Form Inherited View
+         ════════════════════════════════════════════════════ -->
+    <record id="product_template_form_pharmacy" model="ir.ui.view">
+        <field name="name">product.template.form.pharmacy</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+
+            <!-- UC-01: Add Generic Name right after the main product name -->
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="generic_name"
+                       placeholder="e.g. Paracetamol, Amoxicillin …"
+                       />
+            </xpath>
+
+            <!-- UC-02: Add Sell As + Units per Package in General Information tab -->
+            <xpath expr="//page[@name='general_information']//group[1]" position="inside">
+                <group string="Pharmacy Selling Settings">
+                    <field name="pharmacy_product_type" widget="radio"/>
+                    <field name="units_per_package"
+                           invisible="pharmacy_product_type == 'unit'"
+                           required="pharmacy_product_type == 'package'"/>
+                    <field name="stock_display" readonly="1"/>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ════════════════════════════════════════════════════
+         UC-01 + UC-02 — Product List View: add columns
+         ════════════════════════════════════════════════════ -->
+    <record id="product_template_list_pharmacy" model="ir.ui.view">
+        <field name="name">product.template.list.pharmacy</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="generic_name" optional="show"/>
+                <field name="pharmacy_product_type" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ════════════════════════════════════════════════════
+         UC-01: Search View — add generic_name filter
+         ════════════════════════════════════════════════════ -->
+    <record id="product_template_search_pharmacy" model="ir.ui.view">
+        <field name="name">product.template.search.pharmacy</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="generic_name"
+                       string="Generic / Scientific Name"
+                       filter_domain="[('generic_name', 'ilike', self)]"/>
+            </xpath>
+
+            <!-- UC-02: Group By Sell Type -->
+            <xpath expr="//filter[@name='categ_id']" position="after">
+                <separator/>
+                <filter string="Sell As: Unit"
+                        name="filter_unit"
+                        domain="[('pharmacy_product_type','=','unit')]"/>
+                <filter string="Sell As: Package"
+                        name="filter_package"
+                        domain="[('pharmacy_product_type','=','package')]"/>
+                <separator/>
+                <group string="Group By">
+                    <filter string="Sell Type"
+                            name="group_pharmacy_type"
+                            context="{'group_by': 'pharmacy_product_type'}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

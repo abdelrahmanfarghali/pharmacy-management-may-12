@@ -1,0 +1,17 @@
+<odoo>
+    <record id="medicine_feature_action_id" model="ir.actions.act_window">
+        <field name="name">Pharmacy</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="medicine_feature_view_id" model="ir.ui.view">
+        <field name="name">Pharmacy</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+        <xpath expr="//header" position="inside">
+                <field name="classification" widget="statusbar" clickable="1" options="{'clickable':1}"/>
+        </xpath>
+        </field>
+    </record>
+</odoo>

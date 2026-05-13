@@ -1,0 +1,4 @@
+<odoo>
+    <menuitem id="pharma_root" name="Pharamcy"/>
+    <menuitem id="medicine_feature_subroot" name="Mdedicine" parent="pharma_root" action="medicine_feature_action_id"/>
+</odoo>

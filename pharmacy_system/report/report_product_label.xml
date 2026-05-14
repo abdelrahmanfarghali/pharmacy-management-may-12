@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        Pharmacy Label Customization:
+        Injects the Generic / Scientific name into standard product labels
+        and ensures barcodes are prominent.
+    -->
+
+    <!-- 2x7 Label: Increase barcode size and style numbers -->
+    <template id="report_simple_label2x7_pharmacy" inherit_id="product.report_simple_label2x7">
+        <xpath expr="//t[@t-set='barcode_size']" position="replace">
+            <t t-set="barcode_size" t-value="'width:45mm;height:14mm'"/>
+        </xpath>
+        <xpath expr="//div[hasclass('o_label_name')]" position="after">
+            <div t-if="product.generic_name" class="o_label_generic_name" style="font-size: 0.75em; font-style: italic; color: #666; margin-top: -2px; margin-bottom: 2px;">
+                <span t-field="product.generic_name"/>
+            </div>
+        </xpath>
+        <xpath expr="//span[contains(@t-out, 'barcode')]" position="attributes">
+            <attribute name="style">font-size: 1.1em; font-weight: bold; display: block; margin-top: 1px;</attribute>
+        </xpath>
+    </template>
+
+    <!-- 4x7 Label: Maximize width for EAN-13 clarity -->
+    <template id="report_simple_label4x7_pharmacy" inherit_id="product.report_simple_label4x7">
+        <xpath expr="//t[@t-set='barcode_size']" position="replace">
+            <t t-set="barcode_size" t-value="'width:42mm;height:8mm'"/>
+        </xpath>
+        <xpath expr="//div[hasclass('o_label_name')]" position="after">
+            <div t-if="product.generic_name" class="o_label_generic_name" style="font-size: 0.7em; font-style: italic; color: #666; line-height: 1.1;">
+                <span t-field="product.generic_name"/>
+            </div>
+        </xpath>
+        <xpath expr="//span[contains(@t-out, 'barcode')]" position="attributes">
+            <attribute name="style">font-size: 1.0em; font-weight: bold; display: block;</attribute>
+        </xpath>
+    </template>
+
+    <!-- 4x12 Label: Smallest label, ensure numbers fit -->
+    <template id="report_simple_label4x12_pharmacy" inherit_id="product.report_simple_label4x12">
+        <xpath expr="//t[@t-set='barcode_size']" position="replace">
+            <t t-set="barcode_size" t-value="'width:38mm;height:5mm'"/>
+        </xpath>
+        <xpath expr="//div[hasclass('o_label_name')]" position="after">
+            <div t-if="product.generic_name" class="o_label_generic_name" style="font-size: 0.65em; font-style: italic; color: #666;">
+                <span t-field="product.generic_name"/>
+            </div>
+        </xpath>
+        <xpath expr="//span[contains(@t-out, 'barcode')]" position="attributes">
+            <attribute name="style">font-size: 0.9em; font-weight: bold; display: block;</attribute>
+        </xpath>
+    </template>
+
+    <!-- 4x12 No Price Label -->
+    <template id="report_simple_label4x12_no_price_pharmacy" inherit_id="product.report_simple_label4x12_no_price">
+        <xpath expr="//t[@t-set='barcode_size']" position="replace">
+            <t t-set="barcode_size" t-value="'width:38mm;height:6mm'"/>
+        </xpath>
+        <xpath expr="//div[hasclass('o_label_name')]" position="after">
+            <div t-if="product.generic_name" class="o_label_generic_name" style="font-size: 0.65em; font-style: italic; color: #666;">
+                <span t-field="product.generic_name"/>
+            </div>
+        </xpath>
+        <xpath expr="//span[contains(@t-out, 'barcode')]" position="attributes">
+            <attribute name="style">font-size: 0.9em; font-weight: bold; display: block;</attribute>
+        </xpath>
+    </template>
+
+    <!-- Dymo Label: Direct sizing for specific rolls -->
+    <template id="report_simple_label_dymo_pharmacy" inherit_id="product.report_simple_label_dymo">
+        <xpath expr="//div[hasclass('o_label_name')]" position="after">
+            <div t-if="product.generic_name" class="o_label_generic_name" style="font-size: 0.7em; font-style: italic; color: #666; line-height: 1.0;">
+                <span t-field="product.generic_name"/>
+            </div>
+        </xpath>
+        <xpath expr="//div[hasclass('o_label_name')]/span[contains(@t-out, 'barcode')]" position="attributes">
+            <attribute name="style">font-size: 1.1em; font-weight: bold;</attribute>
+        </xpath>
+    </template>
+
+</odoo>

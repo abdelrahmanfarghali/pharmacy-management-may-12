@@ -57,3 +57,23 @@ class ProductProduct(models.Model):
             expression.OR([name_domain, generic_domain]),
         ])
         return self._search(combined, limit=limit, order=order)
+
+    # ------------------------------------------------------------------
+    # Actions
+    # ------------------------------------------------------------------
+
+    def action_generate_pharmacy_barcode(self):
+        """Action: delegates to the template action."""
+        self.ensure_one()
+        return self.product_tmpl_id.action_generate_pharmacy_barcode()
+
+    def action_open_batch_label_layout(self):
+        """Delegate batch print to the template."""
+        return self.product_tmpl_id.action_open_batch_label_layout()
+
+    def action_open_barcodes_pos(self):
+        """Smart-button action: delegates to the template action."""
+        self.ensure_one()
+        return self.product_tmpl_id.action_open_barcodes_pos()
+
+

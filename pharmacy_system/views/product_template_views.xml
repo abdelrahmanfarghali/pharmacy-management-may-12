@@ -10,7 +10,14 @@
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
-         <xpath expr="//label[@for='name']" position="replace">
+            <xpath expr="//header" position="inside">
+                <button name="action_open_batch_label_layout"
+                        type="object"
+                        string="Batch Print Labels"
+                        class="btn btn-primary"
+                        invisible="not id"/>
+            </xpath>
+            <xpath expr="//label[@for='name']" position="replace">
                 <label for="name" string="Medicine Name"/>
             </xpath>
         </field>

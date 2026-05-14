@@ -1,0 +1,30 @@
+{
+  "product_template": {
+    "id": 42,
+    "name": "Paracetamol 500mg",
+    "barcode": "6281234567890",
+    "barcode_line_ids": [
+      {
+        "barcode": "6281234567890",
+        "barcode_format": "ean13",
+        "unit": "unit",
+        "is_primary": true,
+        "notes": "Manufacturer barcode"
+      },
+      {
+        "barcode": "PH0000001",
+        "barcode_format": "internal",
+        "unit": "package",
+        "is_primary": false,
+        "notes": "Pharmacy shelf label"
+      },
+      {
+        "barcode": "12345678",
+        "barcode_format": "ean8",
+        "unit": "unit",
+        "is_primary": false,
+        "notes": "Export variant"
+      }
+    ]
+  }
+}

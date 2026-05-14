@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ──────────────────────────────────────────
+         product.template form: Barcodes tab
+    ────────────────────────────────────────── -->
+    <record id="product_template_barcode_form_view" model="ir.ui.view">
+        <field name="name">product.template.barcode.form.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+
+            <notebook position="inside">
+                <page string="Barcodes" name="page_barcodes"
+                      invisible="not id">
+
+                    <div class="o_barcode_toolbar mb-3 d-flex gap-2">
+                        <button name="action_generate_pharmacy_barcode"
+                                type="object"
+                                string="Generate Pharmacy Barcode"
+                                class="btn btn-primary"
+                                icon="fa-barcode"
+                                title="Generate a new unique barcode using the pharmacy sequence"/>
+                        <button name="action_open_label_layout"
+                                type="object"
+                                string="Print Barcode Label"
+                                class="btn btn-secondary"
+                                icon="fa-print"
+                                title="Print labels for this product"
+                                invisible="not id"/>
+                        <field name="barcode_count" invisible="1"/>
+                    </div>
+
+                    <field name="barcode_line_ids"
+                           mode="list"
+                           nolabel="1"
+                           options="{'editable': 'bottom'}">
+                        <list string="Product Barcodes"
+                               editable="bottom"
+                               decoration-success="is_primary"
+                               decoration-muted="not is_primary">
+
+                            <!-- Scanner / keyboard input -->
+                            <field name="name" string="Title / Ref" optional="show"/>
+                            <field name="barcode"
+                                   string="Barcode Value"
+                                   placeholder="Scan or type barcode…"
+                                   required="1"/>
+
+                            <field name="barcode_format"
+                                   string="Format"
+                                   required="1"
+                                   options="{'no_open': True}"/>
+
+                            <field name="unit"
+                                   string="Unit"
+                                   required="1"/>
+
+                            <field name="notes"
+                                   string="Notes"
+                                   optional="show"/>
+
+                            <field name="is_primary"
+                                   string="Primary"
+                                   widget="boolean_toggle"/>
+
+                            <button name="action_set_as_primary"
+                                    type="object"
+                                    icon="fa-star"
+                                    string="Set as Primary"
+                                    title="Promote this barcode to primary"
+                                    class="btn btn-link text-warning p-0"
+                                    invisible="is_primary"/>
+                        </list>
+                    </field>
+
+                </page>
+            </notebook>
+
+        </field>
+    </record>
+
+    <!-- ──────────────────────────────────────────
+         Barcode Sequence config form + tree
+    ────────────────────────────────────────── -->
+    <record id="pharmacy_barcode_sequence_form_view" model="ir.ui.view">
+        <field name="name">pharmacy.barcode.sequence.form</field>
+        <field name="model">pharmacy.barcode.sequence</field>
+        <field name="arch" type="xml">
+            <form string="Pharmacy Barcode Sequence">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="prefix"/>
+                        <field name="padding"/>
+                        <field name="next_number"/>
+                        <field name="active" widget="boolean_toggle"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="pharmacy_barcode_sequence_tree_view" model="ir.ui.view">
+        <field name="name">pharmacy.barcode.sequence.tree</field>
+        <field name="model">pharmacy.barcode.sequence</field>
+        <field name="arch" type="xml">
+            <list string="Barcode Sequences" editable="top">
+                <field name="name"/>
+                <field name="prefix"/>
+                <field name="padding"/>
+                <field name="target_format"/>
+                <field name="next_number"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_pharmacy_barcode_sequence" model="ir.actions.act_window">
+        <field name="name">Barcode Sequences</field>
+        <field name="res_model">pharmacy.barcode.sequence</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

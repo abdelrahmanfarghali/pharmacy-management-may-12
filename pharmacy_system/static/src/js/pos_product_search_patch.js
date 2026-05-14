@@ -16,9 +16,9 @@
  */
 
 import { patch } from "@web/core/utils/patch";
-import { Product } from "@point_of_sale/app/store/models";
+import { ProductProduct } from "@point_of_sale/app/models/product_product";
 
-patch(Product.prototype, {
+patch(ProductProduct.prototype, {
     /**
      * Extends the base searchString getter.
      * Base returns: `${name}|${internalRef}|${barcode}` (all lowercase).

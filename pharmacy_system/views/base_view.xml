@@ -1,4 +1,14 @@
 <odoo>
     <menuitem id="pharma_root_v2" name="Pharamcy (Beta 1)"/>
     <menuitem id="medicine_feature_subroot" name="Medicine 💊" parent="pharma_root_v2" action="medicine_feature_action_id"/>
+    <menuitem id="menu_pharmacy_barcode_config"
+              name="Barcode Sequences"
+              parent="medicine_feature_subroot"
+              action="action_pharmacy_barcode_sequence"
+              sequence="1"/>
+    <menuitem id="menu_pharmacy_medicine_list"
+              name="Medicine List"
+              parent="medicine_feature_subroot"
+              action="medicine_feature_action_id"
+              sequence="2"/>
 </odoo>

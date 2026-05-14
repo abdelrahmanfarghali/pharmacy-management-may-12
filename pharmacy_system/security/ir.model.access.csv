@@ -1,1 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_product_barcode_line_user,product.barcode.line user,model_product_barcode_line,base.group_user,1,1,1,1
+access_product_barcode_line_manager,product.barcode.line manager,model_product_barcode_line,base.group_system,1,1,1,1
+access_pharmacy_barcode_sequence_manager,pharmacy.barcode.sequence manager,model_pharmacy_barcode_sequence,base.group_system,1,1,1,1
+access_pharmacy_barcode_sequence_user,pharmacy.barcode.sequence user,model_pharmacy_barcode_sequence,base.group_user,1,0,0,0

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="pharmacy_barcode_sequence_default" model="pharmacy.barcode.sequence">
+        <field name="name">Default Pharmacy Sequence</field>
+        <field name="prefix">PH</field>
+        <field name="padding">7</field>
+        <field name="next_number">1</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

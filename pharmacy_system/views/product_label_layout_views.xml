@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_product_label_layout_form_inherit" model="ir.ui.view">
+        <field name="name">product.label.layout.form.inherit</field>
+        <field name="model">product.label.layout</field>
+        <field name="inherit_id" ref="product.product_label_layout_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='print_format']" position="after">
+                <field name="print_all_barcodes" invisible="1"/>
+                <div class="alert alert-info" role="alert" invisible="not print_all_barcodes">
+                    <strong>Batch Mode:</strong> This will print all barcodes defined for the selected products.
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

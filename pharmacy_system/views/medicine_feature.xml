@@ -3,6 +3,7 @@
         <field name="name">Pharmacy</field>
         <field name="res_model">product.template</field>
         <field name="view_mode">list,form</field>
+        <field name="domain">[('categ_id.name', '=', 'Medicine')]</field>
     </record>
     <record id="medicine_feature_view_id" model="ir.ui.view">
         <field name="name">Pharmacy</field>

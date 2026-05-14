@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        XPath injection: adds a "Barcodes" smart-button in the PoS
+        product.template kanban/form quick-info area.
+        Targets the existing action-buttons zone in the PoS backend product view.
+    -->
+    <record id="pos_product_template_barcode_button" model="ir.ui.view">
+        <field name="name">pos.product.template.barcode.button</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button type="object"
+                        name="action_open_barcodes_pos"
+                        class="oe_stat_button"
+                        icon="fa-barcode"
+                        invisible="not id">
+                    <field name="barcode_count"
+                           string="Barcodes"
+                           widget="statinfo"/>
+                </button>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

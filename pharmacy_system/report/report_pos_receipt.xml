@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         point_of_sale – QWeb receipt template
+         Append the generic/scientific name below each order line product
+         name on the printed / email receipt.
+
+         NOTE: POS also renders receipts client-side (JS). The server-side
+         QWeb override covers the "Print" backend path. For the live
+         front-end receipt, pair this with the companion JS patch described
+         in the README.
+
+         IN ODOO 18: The backend 'point_of_sale.report_receipt' template
+         has been removed. Receipts are now purely OWL/JS driven.
+         We comment out this template to fix the "External ID not found" error.
+         ================================================================ -->
+    <!--
+    <template
+        id="report_pos_receipt_generic_name"
+        inherit_id="point_of_sale.report_receipt"
+        priority="15"
+    >
+        <xpath
+            expr="//div[hasclass('product-name')]"
+            position="inside"
+        >
+            <t t-if="line.product_id and line.product_id.generic_name">
+                <div class="generic-name text-muted" style="font-size:0.8em;font-style:italic;">
+                    <t t-esc="line.product_id.generic_name"/>
+                </div>
+            </t>
+        </xpath>
+    </template>
+    -->
+
+</odoo>

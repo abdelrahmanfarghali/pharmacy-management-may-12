@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         account.move (Invoice / Bill / Credit Note) – QWeb report
+         Inject the generic/scientific name beneath the product name in
+         every invoice line that carries a product with a generic_name.
+         ================================================================ -->
+    <template id="report_invoice_line_generic_name" inherit_id="account.report_invoice_document" priority="15">
+        <!-- Target the product name cell inside invoice lines -->
+        <xpath expr="//span[@t-field='line.name']" position="after">
+            <t t-if="line.product_id and line.product_id.generic_name">
+                <br/>
+                <small class="text-muted fst-italic">
+                    <t t-esc="line.product_id.generic_name"/>
+                </small>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         product.template – add Generic / Scientific Name to the
+         "General Information" tab, immediately below the product name.
+         ================================================================ -->
+    <record id="product_template_only_form_view_name" model="ir.ui.view">
+        <field name="name">product.template.common.form</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+         <xpath expr="//label[@for='name']" position="replace">
+                <label for="name" string="Medicine Name"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="product_template_only_form_view_categ_id" model="ir.ui.view">
+        <field name="name">product.template.common.form</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Target the field element named 'categ_id' -->
+            <xpath expr="//field[@name='categ_id']" position="attributes">
+                <!-- Set the domain attribute dynamically or statically -->
+                <attribute name="domain">[('name', '=', 'Medicine')]</attribute>
+            </xpath>
+        </field>
+    </record>
+    <record id="product_template_form_view_generic_name" model="ir.ui.view">
+        <field name="name">product.template.form.generic_name</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+        
+            <xpath expr="//field[@name='name']" position="after">
+            <span class="w-50 px-1"/>
+                <div class="w-75">
+                    <label for="generic_name" string="Scientific / Generic Name" class="oe_edit_only"/>
+                    <field name="generic_name"
+                        placeholder="(Optional) e.g. Paracetamol, Sodium Chloride, Cannabis sativa…"
+                        class="text-muted fs-5 fw-normal w-100"
+                        nolabel="1"/>
+                </div>
+                <field name="name" invisible="1"/>  <!-- ensure name is in DOM for decoration -->
+                <div class="alert alert-warning mt-1 mb-0 py-1 px-2 small" invisible="not generic_name or name != generic_name" role="alert" style="width: fit-content;">
+                    <i class="fa fa-exclamation-triangle me-1"/>
+                    Generic name appears identical to the product name.
+                </div>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ================================================================
+         product.template – optional list view column
+         ================================================================ -->
+    <record id="product_template_list_view_generic_name" model="ir.ui.view">
+        <field name="name">product.template.list.generic_name</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='name']" position="after">
+                <field
+                    name="generic_name"
+                    optional="hide"
+                    string="Generic / Scientific Name"
+                />
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ================================================================
+         product.template – extend the search view so users can filter
+         and search by generic_name from the searchbar.
+         ================================================================ -->
+    <record id="product_template_search_view_generic_name" model="ir.ui.view">
+        <field name="name">product.template.search.generic_name</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+
+            <!-- Searchbar field: typing in the search box offers
+                 "Search Generic Name for …" as a suggestion -->
+            <xpath expr="//field[@name='name']" position="after">
+                <field
+                    name="generic_name"
+                    string="Generic / Scientific Name"
+                    filter_domain="[('generic_name', 'ilike', self)]"
+                />
+            </xpath>
+
+            <!-- Dedicated filter toggle for "has a generic name" -->
+            <xpath expr="//filter[@name='inactive']" position="before">
+                <filter
+                    name="has_generic_name"
+                    string="Has Generic Name"
+                    domain="[('generic_name', '!=', False), ('generic_name', '!=', '')]"
+                />
+                <separator/>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

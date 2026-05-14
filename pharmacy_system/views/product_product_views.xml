@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         product.product (variant) form view – mirrors the template field.
+         Variants are read-only here; editing happens on the template.
+         ================================================================ -->
+    <record id="product_product_form_view_generic_name" model="ir.ui.view">
+        <field name="name">product.product.form.generic_name</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='name']" position="after">
+                <field
+                    name="generic_name"
+                    placeholder="Inherited from product template"
+                    optional="show"
+                />
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

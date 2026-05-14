@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         sale.order – QWeb report
+         Inject the generic/scientific name beneath the product description
+         in each order line.
+         ================================================================ -->
+    <template id="report_saleorder_line_generic_name" inherit_id="sale.report_saleorder_document" priority="15">
+        <xpath expr="//span[@t-field='line.name']" position="after">
+            <t t-if="line.product_id and line.product_id.generic_name">
+                <br/>
+                <small class="text-muted fst-italic">
+                    <t t-esc="line.product_id.generic_name"/>
+                </small>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

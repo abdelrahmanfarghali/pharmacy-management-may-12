@@ -1,0 +1,4 @@
+<odoo>
+    <menuitem id="pharma_root_v2" name="Pharamcy (Beta 1)"/>
+    <menuitem id="medicine_feature_subroot" name="Medicine 💊" parent="pharma_root_v2" action="medicine_feature_action_id"/>
+</odoo>

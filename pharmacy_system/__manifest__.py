@@ -13,6 +13,7 @@
         'sale',
         'account',
         'stock',
+        'uom',
         'point_of_sale',
         'pos_sale',
         'barcodes'],
@@ -28,6 +29,7 @@
         'views/product_barcode_views.xml',
         'views/pos_product_xpath.xml',
         'views/medicine_feature.xml',
+        'views/commission_views.xml',
         'views/base_view.xml',
         'views/product_template_views.xml',
         'views/product_label_layout_views.xml',
@@ -37,6 +39,7 @@
         'point_of_sale._assets_pos': [
             'pharmacy_system/static/src/js/pos_product_search_patch.js',
             'pharmacy_system/static/src/js/barcode_handler.js',
+            'pharmacy_system/static/src/js/pos_package_restriction.js',
         ],
         'web.assets_backend': [
             'pharmacy_system/static/src/scss/main_menu_styles.scss',

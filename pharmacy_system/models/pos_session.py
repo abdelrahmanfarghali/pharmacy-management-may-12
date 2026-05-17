@@ -3,20 +3,15 @@ from odoo import api, models
 
 
 class PosSession(models.Model):
-    """Ensure ``generic_name`` is included in the product payload that the
-    POS front-end loads on session open.
+    """Obsolete for Odoo 18.
 
-    Odoo 18 POS uses ``_loader_params_product_product`` (and the analogous
-    template variant) to declare which fields are fetched via JSON-RPC when
-    the session initialises. Extending ``fields`` here is the canonical,
-    upgrade-safe way to add custom fields to the POS product object without
-    touching core JS.
+    Odoo 18 has migrated point_of_sale fields loading from the POS session
+    loader params (such as `_loader_params_product_product`) to the new
+    `pos.load.mixin` model-level `_load_pos_data_fields` interface.
+
+    Custom product/variant fields for the POS front-end are now correctly injected
+    by overriding `_load_pos_data_fields` in `product.product`.
     """
 
     _inherit = 'pos.session'
 
-    @api.model
-    def _loader_params_product_product(self):
-        result = super()._loader_params_product_product()
-        result['search_params']['fields'].append('generic_name')
-        return result

@@ -26,6 +26,13 @@
                 parent="medicine_feature_subroot"
                 action="action_pharmacy_medicine_limits"
                 sequence="3"/>
+        
+        <!-- Commission Report -->
+        <menuitem id="menu_pharmacy_commission_report"
+            name="Commission Report"
+            parent="medicine_feature_subroot"
+            action="action_pharmacy_commission_report"
+            sequence="4"/>
 
         <!-- Second main root next to Medicine -->
         <menuitem id="menu_pharmacy_barcode_config"
@@ -38,4 +45,5 @@
                 parent="pharma_root_v2"
                 action="action_max_qty_log"
                 sequence="3"/>
+
 </odoo>

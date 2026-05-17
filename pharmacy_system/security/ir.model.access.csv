@@ -5,3 +5,5 @@ access_pharmacy_barcode_sequence_manager,pharmacy.barcode.sequence manager,model
 access_pharmacy_barcode_sequence_user,pharmacy.barcode.sequence user,model_pharmacy_barcode_sequence,base.group_user,1,0,0,0
 access_max_qty_log_user,max.qty.log user,model_max_qty_log,base.group_user,1,1,1,1
 access_max_qty_log_manager,max.qty.log manager,model_max_qty_log,base.group_system,1,1,1,1
+access_pharmacy_commission_ledger_user,pharmacy.commission.ledger user,model_pharmacy_commission_ledger,base.group_user,1,1,1,1
+access_pharmacy_commission_ledger_manager,pharmacy.commission.ledger manager,model_pharmacy_commission_ledger,base.group_system,1,1,1,1

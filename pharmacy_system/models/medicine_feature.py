@@ -18,6 +18,20 @@ class MedicineFeature(models.Model):
 
     @api.onchange('is_medicine')
     def _onchange_is_medicine(self):
+        res = {}
+        
+        # UC: Classification change warning if stock transactions exist
+        if self._origin.id:
+            has_moves = self.env['stock.move'].search_count([
+                ('product_id.product_tmpl_id', '=', self._origin.id),
+                ('state', '=', 'done')
+            ])
+            if has_moves > 0:
+                res['warning'] = {
+                    'title': _("Warning"),
+                    'message': _("Changing classification may affect existing rules. Confirm?")
+                }
+
         if self.is_medicine:
             # Enable availability in Point of Sale and set POS category
             self.available_in_pos = True
@@ -34,10 +48,7 @@ class MedicineFeature(models.Model):
             
             if medicine_categ:
                 self.categ_id = medicine_categ.id
-            
-            # Return dynamic domain to restrict category to Medicine
-            if medicine_categ:
-                return {'domain': {'categ_id': [('id', '=', medicine_categ.id)]}}
+                res['domain'] = {'categ_id': [('id', '=', medicine_categ.id)]}
         else:
             self.max_qty_per_invoice = 0.0
             
@@ -49,16 +60,26 @@ class MedicineFeature(models.Model):
                 self.categ_id = default_categ.id
                 
             # Remove domain restriction
-            return {'domain': {'categ_id': []}}
+            res['domain'] = {'categ_id': []}
 
-    @api.constrains('max_qty_per_invoice')
-    def _check_max_qty_per_invoice_positive(self):
-        for rec in self:
-            if rec.max_qty_per_invoice < 0:
-                raise ValidationError(
-                    _('Max Qty per Invoice cannot be negative for product "%s". '
-                      'Use 0 to disable the restriction.') % rec.name
-                )
+        return res
+
+    @api.onchange('max_qty_per_invoice')
+    def _onchange_max_qty_per_invoice_positive(self):
+        if self.max_qty_per_invoice < 0:
+            self.max_qty_per_invoice = abs(self.max_qty_per_invoice)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if 'max_qty_per_invoice' in vals and vals['max_qty_per_invoice'] < 0:
+                vals['max_qty_per_invoice'] = abs(vals['max_qty_per_invoice'])
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if 'max_qty_per_invoice' in vals and vals['max_qty_per_invoice'] < 0:
+            vals['max_qty_per_invoice'] = abs(vals['max_qty_per_invoice'])
+        return super().write(vals)
 
     def init(self):
         super().init()
@@ -87,16 +108,35 @@ class SaleOrderLine(models.Model):
     @api.constrains('product_uom_qty', 'product_id')
     def _check_max_qty_limit(self):
         for line in self:
-            if line.product_id and line.product_id.is_medicine:
-                limit = line.product_id.max_qty_per_invoice
-                if limit > 0:
-                    # Convert selected UoM quantity to the product's reference UoM to ensure correct UoM limits
-                    qty_in_product_uom = line.product_uom._compute_quantity(line.product_uom_qty, line.product_id.uom_id)
-                    if qty_in_product_uom > limit:
-                        raise ValidationError(_(
-                            "Cannot sell more than the maximum limit of %s %s for medicine '%s' (Requested: %s %s). "
-                            "This limit is strictly enforced for all transactions."
-                        ) % (limit, line.product_id.uom_id.name, line.product_id.name, line.product_uom_qty, line.product_uom.name))
+            if line.product_id:
+                # UC-02: Package restriction: if configured to Sell As Package, qty must be a multiple of units_per_package
+                if line.product_id.pharmacy_product_type == 'package':
+                    units_size = line.product_id.units_per_package
+                    if units_size > 1:
+                        # Ensure the quantity represents whole packages (no fractions)
+                        qty_to_check = getattr(line, 'product_uom_qty', getattr(line, 'qty', None))
+                        if qty_to_check is None:
+                            qty_to_check = 0
+                        if not (abs(qty_to_check - round(qty_to_check)) < 1e-4):
+                            raise ValidationError(_(
+                                "Product '%s' is configured to be sold ONLY in full packages (pack size: %s). "
+                                "Requested quantity (%s %s) is not a whole number of packages. "
+                                "Please enter a whole number of packages.",
+                            ) % (line.product_id.name, units_size, qty_to_check, line.product_uom.name))
+
+                if line.product_id.is_medicine:
+                    limit = line.product_id.max_qty_per_invoice
+                    if limit > 0:
+                        # Compute quantity in reference units (individual units)
+                        if line.product_id.pharmacy_product_type == 'package':
+                            qty_in_ref = line.product_uom_qty * line.product_id.units_per_package
+                        else:
+                            qty_in_ref = line.product_uom._compute_quantity(line.product_uom_qty, line.product_id.uom_id)
+                        if qty_in_ref > limit:
+                            raise ValidationError(_(
+                                "Cannot sell more than the maximum limit of %s %s for medicine '%s' (Requested: %s %s). "
+                                "This limit is strictly enforced for all transactions."
+                            ) % (limit, line.product_id.uom_id.name, line.product_id.name, qty_in_ref, line.product_id.uom_id.name))
 
 
 class AccountMoveLine(models.Model):
@@ -105,16 +145,27 @@ class AccountMoveLine(models.Model):
     @api.constrains('quantity', 'product_id')
     def _check_max_qty_limit(self):
         for line in self:
-            # Enforce on customer invoices/refunds
+            if line.product_id:
+                if line.product_id.pharmacy_product_type == 'package':
+                    units_size = line.product_id.units_per_package
+                    if units_size > 1:
+                        # Ensure whole packages (no fractions)
+                        if not (abs(line.quantity - round(line.quantity)) < 1e-4):
+                            raise ValidationError(_(
+                                "Product '%s' is configured to be sold ONLY in full packages (pack size: %s). "
+                                "Requested quantity (%s %s) is not a whole number of packages. "
+                                "Please enter a whole number of packages.",
+                            ) % (line.product_id.name, units_size, line.quantity, line.product_uom_id.name))
+
             if line.move_id.move_type in ('out_invoice', 'out_refund') and line.product_id and line.product_id.is_medicine:
                 limit = line.product_id.max_qty_per_invoice
-                if limit > 0:
-                    qty_in_product_uom = line.product_uom._compute_quantity(line.quantity, line.product_id.uom_id)
+                if limit > 0 and line.product_uom_id:
+                    qty_in_product_uom = line.product_uom_id._compute_quantity(line.quantity, line.product_id.uom_id)
                     if qty_in_product_uom > limit:
                         raise ValidationError(_(
                             "Cannot invoice more than the maximum limit of %s %s for medicine '%s' (Requested: %s %s). "
                             "This limit is strictly enforced for all invoices."
-                        ) % (limit, line.product_id.uom_id.name, line.product_id.name, line.quantity, line.product_uom.name))
+                        ) % (limit, line.product_id.uom_id.name, line.product_id.name, line.quantity, line.product_uom_id.name))
 
 
 class PosOrderLine(models.Model):
@@ -123,15 +174,27 @@ class PosOrderLine(models.Model):
     @api.constrains('qty', 'product_id')
     def _check_max_qty_limit(self):
         for line in self:
+            if line.product_id:
+                if line.product_id.pharmacy_product_type == 'package':
+                    units_size = line.product_id.units_per_package
+                    if units_size > 1:
+                        # Ensure whole packages (no fractions)
+                        if not (abs(line.qty - round(line.qty)) < 1e-4):
+                            raise ValidationError(_(
+                                "Product '%s' is configured to be sold ONLY in full packages (pack size: %s). "
+                                "Requested quantity (%s %s) is not a whole number of packages. "
+                                "Please enter a whole number of packages.",
+                            ) % (line.product_id.name, units_size, line.qty, line.product_uom_id.name))
+
             if line.product_id and line.product_id.is_medicine:
                 limit = line.product_id.max_qty_per_invoice
-                if limit > 0:
-                    qty_in_product_uom = line.product_uom._compute_quantity(line.qty, line.product_id.uom_id)
+                if limit > 0 and line.product_uom_id:
+                    qty_in_product_uom = line.product_uom_id._compute_quantity(line.qty, line.product_id.uom_id)
                     if qty_in_product_uom > limit:
                         raise ValidationError(_(
                             "Cannot sell more than the maximum limit of %s %s in Point of Sale for medicine '%s' (Requested: %s %s). "
                             "This limit is strictly enforced for all transactions."
-                        ) % (limit, line.product_id.uom_id.name, line.product_id.name, line.qty, line.product_uom.name))
+                        ) % (limit, line.product_id.uom_id.name, line.product_id.name, line.qty, line.product_uom_id.name))
 
 
 class StockMove(models.Model):
@@ -140,7 +203,18 @@ class StockMove(models.Model):
     @api.constrains('product_uom_qty', 'product_id')
     def _check_max_qty_limit(self):
         for move in self:
-            # Enforce limit on outgoing inventory movements (customer deliveries)
+            if move.product_id:
+                if move.product_id.pharmacy_product_type == 'package':
+                    units_size = move.product_id.units_per_package
+                    if units_size > 1:
+                        # Ensure whole packages (no fractions)
+                        if not (abs(move.product_uom_qty - round(move.product_uom_qty)) < 1e-4):
+                            raise ValidationError(_(
+                                "Product '%s' must be moved ONLY in full packages (pack size: %s). "
+                                "Requested quantity (%s %s) is not a whole number of packages. "
+                                "Please enter a whole number of packages.",
+                            ) % (move.product_id.name, units_size, move.product_uom_qty, move.product_uom.name))
+
             if move.picking_id and move.picking_id.picking_type_code == 'outgoing' and move.product_id and move.product_id.is_medicine:
                 limit = move.product_id.max_qty_per_invoice
                 if limit > 0:

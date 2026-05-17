@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models
 from odoo.osv import expression
+from odoo.exceptions import ValidationError
 
 
 class ProductProduct(models.Model):
@@ -76,4 +77,78 @@ class ProductProduct(models.Model):
         self.ensure_one()
         return self.product_tmpl_id.action_open_barcodes_pos()
 
+    # ─────────────────────────────────────────────
+    # UC-02: Product Type — Unit or Package
+    # ─────────────────────────────────────────────
 
+    pharmacy_product_type = fields.Selection(
+        related='product_tmpl_id.pharmacy_product_type',
+        string='Sell As',
+        readonly=False,
+        store=False,
+    )
+
+    units_per_package = fields.Integer(
+        related='product_tmpl_id.units_per_package',
+        string='Units per Package',
+        readonly=False,
+        store=False,
+    )
+
+    price_per_unit = fields.Float(
+        related='product_tmpl_id.price_per_unit',
+        string='Price per Unit',
+        readonly=True,
+        store=False,
+    )
+
+    is_medicine = fields.Boolean(
+        related='product_tmpl_id.is_medicine',
+        string='Is Medicine',
+        readonly=False,
+        store=False,
+    )
+
+    max_qty_per_invoice = fields.Float(
+        related='product_tmpl_id.max_qty_per_invoice',
+        string='Max Qty per Invoice',
+        readonly=False,
+        store=False,
+    )
+
+    stock_display = fields.Char(
+        string='Stock Display',
+        compute='_compute_stock_display',
+        store=False,
+    )
+
+    @api.depends('qty_available', 'units_per_package', 'pharmacy_product_type')
+    def _compute_stock_display(self):
+        for rec in self:
+            if rec.pharmacy_product_type == 'package' and rec.units_per_package > 1:
+                total    = int(rec.qty_available)
+                packages = total // rec.units_per_package
+                units    = total  % rec.units_per_package
+                rec.stock_display = f"{packages} package(s) + {units} unit(s)"
+            else:
+                rec.stock_display = f"{rec.qty_available} unit(s)"
+
+    # ─────────────────────────────────────────────
+    # Odoo 18 POS Field Loading Integration
+    # ─────────────────────────────────────────────
+
+    @api.model
+    def _load_pos_data_fields(self, config_id):
+        """Extend standard POS product fields with custom pharmacy fields."""
+        fields = super()._load_pos_data_fields(config_id)
+        # Add custom pharmacy fields to POS loaded fields list
+        fields += [
+            'generic_name',
+            'pharmacy_product_type',
+            'units_per_package',
+            'price_per_unit',
+            'stock_display',
+            'is_medicine',
+            'max_qty_per_invoice',
+        ]
+        return fields

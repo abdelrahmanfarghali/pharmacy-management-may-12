@@ -3,4 +3,6 @@ from . import product_product
 from . import barcode_sequence
 from . import product_barcode
 from . import product_template
-# from . import pos_session
+from . import res_config_settings
+from . import commission
+from . import pos_session

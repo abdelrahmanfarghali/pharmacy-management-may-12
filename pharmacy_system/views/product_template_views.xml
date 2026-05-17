@@ -15,10 +15,12 @@
                         type="object"
                         string="Batch Print Labels"
                         class="btn btn-primary"
-                        invisible="not id"/>
+                        invisible="not id or not is_medicine"/>
             </xpath>
             <xpath expr="//label[@for='name']" position="replace">
-                <label for="name" string="Medicine Name"/>
+                <field name="is_medicine" invisible="1"/>
+                <label for="name" string="Medicine Name" invisible="not is_medicine"/>
+                <label for="name" string="Product Name" invisible="is_medicine"/>
             </xpath>
         </field>
     </record>
@@ -27,10 +29,13 @@
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
+            <xpath expr="//field[@name='categ_id']" position="before">
+                <field name="is_medicine" invisible="1"/>
+            </xpath>
             <!-- Target the field element named 'categ_id' -->
             <xpath expr="//field[@name='categ_id']" position="attributes">
-                <!-- Set the domain attribute dynamically or statically -->
-                <attribute name="domain">[('name', '=', 'Medicine')]</attribute>
+                <!-- Set the domain attribute dynamically -->
+                <attribute name="domain">[('name', '=', 'Medicine')] if is_medicine else []</attribute>
             </xpath>
         </field>
     </record>
@@ -41,8 +46,9 @@
         <field name="arch" type="xml">
         
             <xpath expr="//field[@name='name']" position="after">
-            <span class="w-50 px-1"/>
-                <div class="w-75">
+                <field name="is_medicine" invisible="1"/>
+                <span class="w-50 px-1"/>
+                <div class="w-75" invisible="not is_medicine">
                     <label for="generic_name" string="Scientific / Generic Name" class="oe_edit_only"/>
                     <field name="generic_name"
                         placeholder="(Optional) e.g. Paracetamol, Sodium Chloride, Cannabis sativa…"

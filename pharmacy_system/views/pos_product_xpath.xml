@@ -12,11 +12,12 @@
         <field name="arch" type="xml">
 
             <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <field name="is_medicine" invisible="1"/>
                 <button type="object"
                         name="action_open_barcodes_pos"
                         class="oe_stat_button"
                         icon="fa-barcode"
-                        invisible="not id">
+                        invisible="not id or not is_medicine">
                     <field name="barcode_count"
                            string="Barcodes"
                            widget="statinfo"/>

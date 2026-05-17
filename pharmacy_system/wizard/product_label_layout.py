@@ -9,6 +9,22 @@ class ProductLabelLayout(models.TransientModel):
         help="If checked, prints all barcodes associated with the pharmacy medicine list."
     )
 
+    is_medicine = fields.Boolean(
+        string="Is Medicine",
+        compute="_compute_is_medicine",
+        store=False,
+    )
+
+    @api.depends('product_tmpl_ids', 'product_ids')
+    def _compute_is_medicine(self):
+        for rec in self:
+            is_med = False
+            if rec.product_tmpl_ids:
+                is_med = any(tmpl.is_medicine for tmpl in rec.product_tmpl_ids)
+            elif rec.product_ids:
+                is_med = any(prod.is_medicine for prod in rec.product_ids)
+            rec.is_medicine = is_med
+
     def _prepare_report_data(self):
         xml_id, data = super()._prepare_report_data()
         

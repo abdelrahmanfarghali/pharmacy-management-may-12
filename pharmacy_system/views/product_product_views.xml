@@ -12,10 +12,12 @@
         <field name="arch" type="xml">
 
             <xpath expr="//field[@name='name']" position="after">
+                <field name="is_medicine" invisible="1"/>
                 <field
                     name="generic_name"
                     placeholder="Inherited from product template"
                     optional="show"
+                    invisible="not is_medicine"
                 />
             </xpath>
 

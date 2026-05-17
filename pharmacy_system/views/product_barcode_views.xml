@@ -10,9 +10,12 @@
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
 
+            <xpath expr="//notebook" position="before">
+                <field name="is_medicine" invisible="1"/>
+            </xpath>
             <notebook position="inside">
                 <page string="Barcodes" name="page_barcodes"
-                      invisible="not id">
+                      invisible="not id or not is_medicine">
 
                     <div class="o_barcode_toolbar mb-3 d-flex gap-2">
                         <button name="action_generate_pharmacy_barcode"

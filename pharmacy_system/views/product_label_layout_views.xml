@@ -6,8 +6,9 @@
         <field name="inherit_id" ref="product.product_label_layout_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='print_format']" position="after">
-                <field name="print_all_barcodes" invisible="1"/>
-                <div class="alert alert-info" role="alert" invisible="not print_all_barcodes">
+                <field name="is_medicine" invisible="1"/>
+                <field name="print_all_barcodes" invisible="not is_medicine"/>
+                <div class="alert alert-info" role="alert" invisible="not print_all_barcodes or not is_medicine">
                     <strong>Batch Mode:</strong> This will print all barcodes defined for the selected products.
                 </div>
             </xpath>

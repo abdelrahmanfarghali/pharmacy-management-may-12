@@ -15,15 +15,12 @@ class ProductLabelLayout(models.TransientModel):
         store=False,
     )
 
-    @api.depends('product_tmpl_ids', 'product_ids')
+    @api.depends('product_tmpl_ids.is_medicine', 'product_ids.is_medicine')
     def _compute_is_medicine(self):
         for rec in self:
-            is_med = False
-            if rec.product_tmpl_ids:
-                is_med = any(tmpl.is_medicine for tmpl in rec.product_tmpl_ids)
-            elif rec.product_ids:
-                is_med = any(prod.is_medicine for prod in rec.product_ids)
-            rec.is_medicine = is_med
+            tmpl_med = any(rec.product_tmpl_ids.mapped('is_medicine'))
+            prod_med = any(rec.product_ids.mapped('is_medicine'))
+            rec.is_medicine = tmpl_med or prod_med
 
     def _prepare_report_data(self):
         xml_id, data = super()._prepare_report_data()

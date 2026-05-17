@@ -79,23 +79,36 @@ class PharmacyBarcodeSequence(models.Model):
         )
         row = self.env.cr.fetchone()
         current = row[0]
-        self.write({'next_number': current + 1})
 
-        # Title: Prefix + Padded number (e.g. PH0000002)
-        title = f"{self.prefix}{str(current).zfill(self.padding)}"
+        while True:
+            # Title: Prefix + Padded number (e.g. PH0000002)
+            title = f"{self.prefix}{str(current).zfill(self.padding)}"
 
-        # Barcode Value: Valid numeric based on format
-        barcode_value = title  # Default for internal
-        if self.target_format == 'ean13':
-            # Use '29' internal prefix + padded number to reach 12 digits + check digit
-            base = f"29{str(current).zfill(10)}"
-            check_digit = self.env['product.barcode.line']._calculate_ean_check_digit(base, 13)
-            barcode_value = f"{base}{check_digit}"
-        elif self.target_format == 'ean8':
-            # Use '29' internal prefix + padded number to reach 7 digits + check digit
-            base = f"29{str(current).zfill(5)}"
-            check_digit = self.env['product.barcode.line']._calculate_ean_check_digit(base, 8)
-            barcode_value = f"{base}{check_digit}"
+            # Barcode Value: Valid numeric based on format
+            barcode_value = title  # Default for internal
+            if self.target_format == 'ean13':
+                # Use '29' internal prefix + padded number to reach 12 digits + check digit
+                base = f"29{str(current).zfill(10)}"
+                check_digit = self.env['product.barcode.line']._calculate_ean_check_digit(base, 13)
+                barcode_value = f"{base}{check_digit}"
+            elif self.target_format == 'ean8':
+                # Use '29' internal prefix + padded number to reach 7 digits + check digit
+                base = f"29{str(current).zfill(5)}"
+                check_digit = self.env['product.barcode.line']._calculate_ean_check_digit(base, 8)
+                barcode_value = f"{base}{check_digit}"
+
+            # Check if this barcode exists in the database
+            exists_in_lines = self.env['product.barcode.line'].search_count([('barcode', '=', barcode_value)]) > 0
+            exists_in_native = self.env['product.template'].search_count([('barcode', '=', barcode_value)]) > 0
+            exists_in_products = self.env['product.product'].search_count([('barcode', '=', barcode_value)]) > 0
+            
+            if not (exists_in_lines or exists_in_native or exists_in_products):
+                # Found a unique, unused barcode! Write the next number as current + 1
+                self.write({'next_number': current + 1})
+                break
+            
+            # If it already exists, increment current and continue searching
+            current += 1
 
         return {
             'title': title,

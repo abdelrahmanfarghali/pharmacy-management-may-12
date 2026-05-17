@@ -1,14 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <menuitem id="pharma_root_v2" name="Pharamcy (Beta 1)"/>
-    <menuitem id="medicine_feature_subroot" name="Medicine 💊" parent="pharma_root_v2" action="medicine_feature_action_id"/>
-    <menuitem id="menu_pharmacy_barcode_config"
-              name="Barcode Sequences"
-              parent="medicine_feature_subroot"
-              action="action_pharmacy_barcode_sequence"
-              sequence="1"/>
-    <menuitem id="menu_pharmacy_medicine_list"
-              name="Medicine List"
-              parent="medicine_feature_subroot"
-              action="medicine_feature_action_id"
-              sequence="2"/>
+    <menuitem id="pharma_root_v2"
+                name="Pharmacy (Integrated)"
+                action="medicine_feature_action_id"/>
+
+        <menuitem id="menu_pharmacy_medicine_pos"
+              name="Cashier"
+              parent="pharma_root_v2"
+              action="pharmacy_system_programmatic.ui_pos_config"
+              sequence="0"/>
+
+        <menuitem id="medicine_feature_subroot"
+                name="Medicine"
+                parent="pharma_root_v2"
+                sequence="1"/>
+
+        <!-- Medicine submenus -->
+        <menuitem id="menu_pharmacy_medicine_list"
+                name="Medicine List"
+                parent="medicine_feature_subroot"
+                action="medicine_feature_action_id"
+                sequence="2"/>
+        <menuitem id="menu_pharmacy_medicine_limits"
+                name="Limited Medicines"
+                parent="medicine_feature_subroot"
+                action="action_pharmacy_medicine_limits"
+                sequence="3"/>
+
+        <!-- Second main root next to Medicine -->
+        <menuitem id="menu_pharmacy_barcode_config"
+                name="Barcode Sequences"
+                parent="pharma_root_v2"
+                action="action_pharmacy_barcode_sequence"
+                sequence="2"/>
+        <menuitem id="menu_max_qty_log"
+                name="Violation Logs"
+                parent="pharma_root_v2"
+                action="action_max_qty_log"
+                sequence="3"/>
 </odoo>

@@ -193,9 +193,9 @@ class ProductTemplate(models.Model):
         """Keep Odoo's built-in barcode field in sync with the primary barcode line."""
         primary = tmpl.barcode_line_ids.filtered('is_primary')[:1]
         if primary and tmpl.barcode != primary.barcode:
-            # Use SQL write to avoid recursion through write()
+            # Use SQL write on product_product to avoid recursion through write()
             self.env.cr.execute(
-                "UPDATE product_template SET barcode = %s WHERE id = %s",
+                "UPDATE product_product SET barcode = %s WHERE product_tmpl_id = %s",
                 (primary.barcode, tmpl.id)
             )
             tmpl.invalidate_recordset(['barcode'])
@@ -207,7 +207,7 @@ class ProductTemplate(models.Model):
     def action_generate_pharmacy_barcode(self):
         """
         Wizard-less generation: fetches the active pharmacy sequence
-        and creates a new secondary barcode line with a valid numeric code
+        and creates or replaces a primary/generated barcode line with a valid numeric code
         and an internal title (e.g. PH0000001).
         """
         self.ensure_one()
@@ -224,15 +224,30 @@ class ProductTemplate(models.Model):
         new_title = data['title']
         new_format = data['format']
         
-        has_primary = bool(self.barcode_line_ids.filtered('is_primary'))
-        self.env['product.barcode.line'].create({
-            'product_tmpl_id': self.id,
-            'name': new_title,
-            'barcode': new_barcode,
-            'barcode_format': new_format,
-            'unit': 'unit',
-            'is_primary': not has_primary,
-        })
+        # Replace Strategy: If the record has a previously generated barcode which is primary,
+        # replace it instead of creating a duplicate line!
+        generated_primary_lines = self.barcode_line_ids.filtered(
+            lambda l: l.is_primary and l.barcode and (l.barcode.startswith('29') or l.barcode.startswith(sequence.prefix))
+        )
+        if generated_primary_lines:
+            line_to_replace = generated_primary_lines[0]
+            line_to_replace.write({
+                'name': new_title,
+                'barcode': new_barcode,
+                'barcode_format': new_format,
+            })
+            self.write({'barcode': new_barcode})
+        else:
+            has_primary = bool(self.barcode_line_ids.filtered('is_primary'))
+            self.env['product.barcode.line'].create({
+                'product_tmpl_id': self.id,
+                'name': new_title,
+                'barcode': new_barcode,
+                'barcode_format': new_format,
+                'unit': 'unit',
+                'is_primary': not has_primary,
+            })
+            
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',

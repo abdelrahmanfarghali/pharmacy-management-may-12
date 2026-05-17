@@ -75,11 +75,7 @@
         <field name="arch" type="xml">
 
             <xpath expr="//field[@name='name']" position="after">
-                <field
-                    name="generic_name"
-                    optional="hide"
-                    string="Generic / Scientific Name"
-                />
+                <field name="generic_name" optional="hide" string="Generic / Scientific Name"/>
             </xpath>
 
         </field>
@@ -98,20 +94,12 @@
             <!-- Searchbar field: typing in the search box offers
                  "Search Generic Name for …" as a suggestion -->
             <xpath expr="//field[@name='name']" position="after">
-                <field
-                    name="generic_name"
-                    string="Generic / Scientific Name"
-                    filter_domain="[('generic_name', 'ilike', self)]"
-                />
+                <field name="generic_name" string="Generic / Scientific Name" filter_domain="[('generic_name', 'ilike', self)]"/>
             </xpath>
 
             <!-- Dedicated filter toggle for "has a generic name" -->
             <xpath expr="//filter[@name='inactive']" position="before">
-                <filter
-                    name="has_generic_name"
-                    string="Has Generic Name"
-                    domain="[('generic_name', '!=', False), ('generic_name', '!=', '')]"
-                />
+                <filter name="has_generic_name" string="Has Generic Name" domain="[('generic_name', '!=', False), ('generic_name', '!=', '')]"/>
                 <separator/>
             </xpath>
 

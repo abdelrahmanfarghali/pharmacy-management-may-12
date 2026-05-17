@@ -1,10 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="medicine_feature_action_id" model="ir.actions.act_window">
         <field name="name">Pharmacy</field>
         <field name="res_model">product.template</field>
         <field name="view_mode">list,form</field>
-        <field name="domain">[('categ_id.name', '=', 'Medicine')]</field>
+        <field name="domain">[('is_medicine', '=', True)]</field>
     </record>
+    
     <record id="medicine_feature_view_id" model="ir.ui.view">
         <field name="name">Pharmacy</field>
         <field name="model">product.template</field>
@@ -13,6 +15,93 @@
             <xpath expr="//field[@name='type']" position="after">
                 <field name="is_medicine"/>
             </xpath>
+            <xpath expr="//field[@name='product_tooltip']" position="after">
+                <field name="max_qty_per_invoice" invisible="not is_medicine"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Max Quantity Log Views -->
+    <record id="view_max_qty_log_tree" model="ir.ui.view">
+        <field name="name">max.qty.log.tree</field>
+        <field name="model">max.qty.log</field>
+        <field name="arch" type="xml">
+            <list string="Max Quantity Logs" create="false" edit="false">
+                <field name="date"/>
+                <field name="product_id"/>
+                <field name="user_id"/>
+                <field name="allowed_qty"/>
+                <field name="attempted_qty"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_max_qty_log_form" model="ir.ui.view">
+        <field name="name">max.qty.log.form</field>
+        <field name="model">max.qty.log</field>
+        <field name="arch" type="xml">
+            <form string="Max Quantity Log" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date" readonly="1"/>
+                            <field name="product_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="user_id" readonly="1"/>
+                            <field name="allowed_qty" readonly="1"/>
+                            <field name="attempted_qty" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_max_qty_log_search" model="ir.ui.view">
+        <field name="name">max.qty.log.search</field>
+        <field name="model">max.qty.log</field>
+        <field name="arch" type="xml">
+            <search string="Search Max Quantity Logs">
+                <field name="product_id"/>
+                <field name="user_id"/>
+                <group expand="0" string="Group By">
+                    <filter string="Product" name="group_by_product" context="{'group_by':'product_id'}"/>
+                    <filter string="User" name="group_by_user" context="{'group_by':'user_id'}"/>
+                    <filter string="Date" name="group_by_date" context="{'group_by':'date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_max_qty_log" model="ir.actions.act_window">
+        <field name="name">Max Quantities Violation Logs</field>
+        <field name="res_model">max.qty.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('allowed_qty', '!=', 0.0)]</field>
+        <field name="search_view_id" ref="view_max_qty_log_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No logs recorded yet.
+            </p>
+            <p>
+                Violations of maximum quantity limits per invoice are recorded here.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_pharmacy_medicine_limits" model="ir.actions.act_window">
+        <field name="name">Medicines with Limits</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('is_medicine', '=', True), ('max_qty_per_invoice', '>', 0.0)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No medicines with limits configured.
+            </p>
+            <p>
+                Configure "Max Quantity per Invoice" on your medicine products to see them here.
+            </p>
         </field>
     </record>
 </odoo>

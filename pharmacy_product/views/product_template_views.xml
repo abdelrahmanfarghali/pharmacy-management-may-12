@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- ════════════════════════════════════════════════════
-         UC-01 + UC-02 — Product Template Form Inherited View
-         ════════════════════════════════════════════════════ -->
+    <!-- UC-01 + UC-02 — Product Template Form -->
     <record id="product_template_form_pharmacy" model="ir.ui.view">
         <field name="name">product.template.form.pharmacy</field>
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
 
-            <!-- UC-01: Add Generic Name right after the main product name -->
+            <!-- UC-01: Generic Name right after product name -->
             <xpath expr="//field[@name='name']" position="after">
                 <field name="generic_name"
-                       placeholder="e.g. Paracetamol, Amoxicillin …"
-                       />
+                       placeholder="e.g. Paracetamol, Amoxicillin …"/>
             </xpath>
 
-            <!-- UC-02: Add Sell As + Units per Package in General Information tab -->
+            <!-- UC-02: Pharmacy Selling Settings group -->
             <xpath expr="//page[@name='general_information']//group[1]" position="inside">
-                <group string="Pharmacy Selling Settings">
+                <group string="Pharmacy Selling Settings" col="2">
                     <field name="pharmacy_product_type" widget="radio"/>
                     <field name="units_per_package"
                            invisible="pharmacy_product_type == 'unit'"
                            required="pharmacy_product_type == 'package'"/>
+                    <field name="price_per_unit"
+                           invisible="pharmacy_product_type == 'unit'"
+                           readonly="1"/>
                     <field name="stock_display" readonly="1"/>
                 </group>
             </xpath>
@@ -31,36 +31,31 @@
         </field>
     </record>
 
-    <!-- ════════════════════════════════════════════════════
-         UC-01 + UC-02 — Product List View: add columns
-         ════════════════════════════════════════════════════ -->
+    <!-- UC-01 + UC-02 — Product List View -->
     <record id="product_template_list_pharmacy" model="ir.ui.view">
         <field name="name">product.template.list.pharmacy</field>
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_tree_view"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='name']" position="after">
-                <field name="generic_name" optional="show"/>
+                <field name="generic_name"        optional="show"/>
                 <field name="pharmacy_product_type" optional="show"/>
+                <field name="units_per_package"   optional="show"/>
+                <field name="price_per_unit"       optional="show"/>
             </xpath>
         </field>
     </record>
 
-    <!-- ════════════════════════════════════════════════════
-         UC-01: Search View — add generic_name filter
-         ════════════════════════════════════════════════════ -->
+    <!-- UC-01 + UC-02 — Search View -->
     <record id="product_template_search_pharmacy" model="ir.ui.view">
         <field name="name">product.template.search.pharmacy</field>
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_search_view"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='name']" position="after">
-                <field name="generic_name"
-                       string="Generic / Scientific Name"
+                <field name="generic_name" string="Generic / Scientific Name"
                        filter_domain="[('generic_name', 'ilike', self)]"/>
             </xpath>
-
-            <!-- UC-02: Group By Sell Type -->
             <xpath expr="//filter[@name='categ_id']" position="after">
                 <separator/>
                 <filter string="Sell As: Unit"

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Remove old stale view records from previous versions -->
+    <delete model="ir.ui.view" search="[('xml_id','like','pharmacy_product.res_config_settings_commission_view')]"/>
+    <delete model="ir.ui.view" search="[('xml_id','like','pharmacy_product.sale_order_line_commission_form')]"/>
+    <delete model="ir.ui.view" search="[('xml_id','like','pharmacy_product.sale_order_line_commission_inline')]"/>
+</odoo>

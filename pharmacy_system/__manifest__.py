@@ -19,7 +19,7 @@
         'barcodes'],
     'data': [
         "security/ir.model.access.csv",
-        'data/barcode_sequence_data.xml',
+        # 'data/barcode_sequence_data.xml',
         'data/product_category_data.xml',
         'report/report_invoice.xml',
         'report/report_saleorder.xml',

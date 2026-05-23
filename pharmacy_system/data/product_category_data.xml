@@ -1,9 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
-        <record id="product_category_medicine" model="product.category">
-            <field name="name">Medicine</field>
-            <field name="parent_id" ref="product.product_category_all"/>
-        </record>
-    </data>
+  <data noupdate="1">
+    <record id="product_category_medicine" model="product.category">
+      <field name="name">Medicine</field>
+    </record>
+
+    <record id="product_category_medicine_rx" model="product.category">
+      <field name="name">Prescription (Rx)</field>
+      <field name="parent_id" ref="product_category_medicine"/>
+    </record>
+
+    <record id="product_category_medicine_otc" model="product.category">
+      <field name="name">OTC (Over-the-Counter)</field>
+      <field name="parent_id" ref="product_category_medicine"/>
+    </record>
+
+    <record id="product_category_medicine_controlled" model="product.category">
+      <field name="name">Controlled Substances (Scheduled Drugs)</field>
+      <field name="parent_id" ref="product_category_medicine"/>
+    </record>
+
+    <record id="product_category_medicine_chronic" model="product.category">
+      <field name="name">Chronic Diseases</field>
+      <field name="parent_id" ref="product_category_medicine"/>
+    </record>
+
+    <record id="product_category_medicine_devices" model="product.category">
+      <field name="name">Medical Devices &amp; Equipment</field>
+      <field name="parent_id" ref="product_category_medicine"/>
+    </record>
+
+    <record id="product_category_medicine_vitamins" model="product.category">
+      <field name="name">Vitamins &amp; Supplements</field>
+      <field name="parent_id" ref="product_category_medicine"/>
+    </record>
+
+    <record id="product_category_medicine_cosmetics" model="product.category">
+      <field name="name">Cosmetics &amp; Personal Care</field>
+      <field name="parent_id" ref="product_category_medicine"/>
+    </record>
+
+    <record id="product_category_medicine_baby_care" model="product.category">
+      <field name="name">Baby Care</field>
+      <field name="parent_id" ref="product_category_medicine"/>
+    </record>
+
+    <record id="product_category_medicine_herbal" model="product.category">
+      <field name="name">Herbal &amp; Traditional Remedies</field>
+      <field name="parent_id" ref="product_category_medicine"/>
+    </record>
+  </data>
 </odoo>

@@ -12,6 +12,21 @@ class PharmacyBarcodeSequence(models.Model):
     _description = 'Pharmacy Barcode Sequence Configuration'
     _rec_name = 'name'
 
+    _sql_constraints = [
+        ('name_unique', 'UNIQUE(name)', 'A sequence with this name already exists.'),
+    ]
+
+    @api.model
+    def _load_records(self, data_list, update=False):
+        """Upsert by name to avoid duplicate key on re-init."""
+        for data in data_list:
+            name = data['values'].get('name')
+            if name:
+                existing = self.search([('name', '=', name)], limit=1)
+                if existing:
+                    data['values']['id'] = existing.id
+        return super()._load_records(data_list, update=update)
+
     name = fields.Char(
         string='Configuration Name',
         required=True,

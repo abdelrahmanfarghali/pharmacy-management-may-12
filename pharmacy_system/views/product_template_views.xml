@@ -32,10 +32,27 @@
             <xpath expr="//field[@name='categ_id']" position="before">
                 <field name="is_medicine" invisible="1"/>
             </xpath>
-            <!-- Target the field element named 'categ_id' -->
+
             <xpath expr="//field[@name='categ_id']" position="attributes">
-                <!-- Set the domain attribute dynamically -->
-                <attribute name="domain">[('name', '=', 'Medicine')] if is_medicine else []</attribute>
+                <attribute name="domain">[('id', 'child_of', %(pharmacy_system.product_category_medicine)d)] if is_medicine else []</attribute>
+            </xpath>
+            <!-- ('name', '=', 'Medicine') -->
+
+            <xpath expr="//field[@name='categ_id']" position="after">
+                <field
+                    name="medicine_category_id"
+                    domain="[('id', 'child_of', %(pharmacy_system.product_category_medicine)d), ('id', '!=', %(pharmacy_system.product_category_medicine)d)]"
+                    context="{
+                        'default_parent_id': %(pharmacy_system.product_category_medicine)d,
+                        'form_view_ref': 'product.product_category_form_view'
+                        }"
+                    options="{'no_quick_create': True, 'no_create_edit': False}"
+                    invisible="not is_medicine"/>
+
+                <field
+                    name="medicine_category_display"
+                    readonly="1"
+                    invisible="not medicine_category_id"/>
             </xpath>
 
             <!-- UC-02: Pharmacy Selling Settings group -->

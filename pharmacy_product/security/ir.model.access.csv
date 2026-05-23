@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_pharmacy_price_history_user,pharmacy.price.history.user,model_pharmacy_price_history,base.group_user,1,0,0,0
+access_pharmacy_price_history_manager,pharmacy.price.history.manager,model_pharmacy_price_history,sales_team.group_sale_manager,1,1,1,1
+access_pharmacy_commission_report_user,pharmacy.commission.report.user,model_pharmacy_commission_report,base.group_user,1,0,0,0

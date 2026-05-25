@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo noupdate="1">
+<odoo noupdate="0">
 
     <!--
         Demo: Pre-create one Expired location per company
@@ -10,7 +10,7 @@
     <!-- Virtual / parent location for all Expired areas (View type) -->
     <record id="location_expired_all" model="stock.location">
         <field name="name">Expired Products (All Branches)</field>
-        <field name="usage">internal</field>
+        <field name="usage">view</field>    
         <field name="location_id" ref="stock.stock_location_locations"/>
         <field name="active">True</field>
         <field name="comment">Parent view location for all Expired quarantine sub-locations.</field>

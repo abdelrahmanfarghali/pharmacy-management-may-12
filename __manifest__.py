@@ -21,14 +21,17 @@
         'stock',
         'point_of_sale',
         'sale_stock',
+        'mail',
     ],
     'data': [
         'security/ir.model.access.csv',
         'data/stock_location_data.xml',
+        'data/expiry_detection_cron.xml',
         'views/stock_location_views.xml',
         'views/stock_picking_views.xml',
         'views/stock_quant_views.xml',
         'views/product_views.xml',
+        'views/stock_expiry_detection_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

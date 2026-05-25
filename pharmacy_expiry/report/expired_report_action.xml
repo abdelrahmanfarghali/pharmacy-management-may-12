@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_expired_medicines_pdf" model="ir.actions.report">
+        <field name="name">Expired Medicines Report</field>
+        <field name="model">pharmacy.expired.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">pharmacy_expiry.report_expired_medicines_template</field>
+        <field name="report_file">pharmacy_expiry.report_expired_medicines_template</field>
+        <field name="binding_model_id" ref="model_pharmacy_expired_report"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

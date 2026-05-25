@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_expired_medicines_template">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h2>Expired Medicines Report</h2>
+                    <p>Generated on: <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/></p>
+
+                    <!-- Group by location -->
+                    <t t-set="locations" t-value="docs.mapped('location_id')"/>
+                    <t t-foreach="locations" t-as="loc">
+                        <h4>Branch / Location: <t t-esc="loc.complete_name"/></h4>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Lot / Batch</th>
+                                    <th>Expiry Date</th>
+                                    <th>Days</th>
+                                    <th>Qty</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="docs.filtered(lambda r: r.location_id == loc)" t-as="rec">
+                                    <tr>
+                                        <td><t t-esc="rec.product_name"/></td>
+                                        <td><t t-esc="rec.lot_name"/></td>
+                                        <td><t t-esc="rec.expiration_date and rec.expiration_date.strftime('%d/%m/%Y') or ''"/></td>
+                                        <td><t t-esc="rec.days_to_expiry"/></td>
+                                        <td><t t-esc="rec.qty_on_hand"/></td>
+                                        <td>
+                                            <span t-if="rec.near_expiry_status == 'expired'"
+                                                  style="color:red;font-weight:bold;">EXPIRED</span>
+                                            <span t-elif="rec.near_expiry_status == 'near_expiry'"
+                                                  style="color:orange;font-weight:bold;">NEAR EXPIRY</span>
+                                            <span t-else=""
+                                                  style="color:green;">OK</span>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

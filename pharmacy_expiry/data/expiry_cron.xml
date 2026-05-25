@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- SC2-UC-04: Daily cron — detect expired lots and notify -->
+    <record id="cron_detect_expired_lots" model="ir.cron">
+        <field name="name">Pharmacy: Detect Expired Lots</field>
+        <field name="model_id" ref="stock.model_stock_lot"/>
+        <field name="state">code</field>
+        <field name="code">model.action_detect_and_notify_expired()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+                <field name="active">True</field>
+    </record>
+
+    <!-- SC2-UC-03: Daily cron — send near-expiry alerts -->
+    <record id="cron_near_expiry_alerts" model="ir.cron">
+        <field name="name">Pharmacy: Near-Expiry Alerts</field>
+        <field name="model_id" ref="stock.model_stock_lot"/>
+        <field name="state">code</field>
+        <field name="code">model.action_send_near_expiry_alerts()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+                <field name="active">True</field>
+    </record>
+
+</odoo>

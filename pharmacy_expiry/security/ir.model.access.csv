@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_expired_wizard_user,expired.wizard.user,model_pharmacy_expired_medicines_wizard,stock.group_stock_user,1,1,1,1
+access_expired_report_user,expired.report.user,model_pharmacy_expired_report,stock.group_stock_user,1,0,0,0
+access_expired_report_manager,expired.report.manager,model_pharmacy_expired_report,stock.group_stock_manager,1,1,1,1

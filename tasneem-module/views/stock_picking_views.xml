@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════
+         STOCK PICKING — Form View: Expired Transfer Reason
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_picking_form_expired_reason" model="ir.ui.view">
+        <field name="name">stock.picking.form.expired.reason</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <!-- Insert warning banner + mandatory reason field when Expired location involved -->
+            <div name="button_box" position="before">
+                <!-- Warning banner — only visible when expired location is involved -->
+                <div class="alert alert-danger o_expired_location_warning"
+                     invisible=" [('involves_expired_location', '=', False)]">
+                    <i class="fa fa-exclamation-triangle me-2"/>
+                    <strong>EXPIRED LOCATION TRANSFER</strong> — This transfer involves a quarantined
+                    Expired location. A transfer reason is <strong>mandatory</strong>.
+                    Expired stock must never re-enter the active supply chain.
+                </div>
+            </div>
+
+            <!-- Reason field — shown and required only when expired location is involved -->
+            <field name="note" position="after">
+                <field name="involves_expired_location" invisible="1"/>
+                <field
+                    name="expired_transfer_reason"
+                    string="⚠ Expired Transfer Reason"
+                    invisible="
+                       [('involves_expired_location', '=', False)],
+                        
+                    "
+                    placeholder="Mandatory: explain why this stock is being moved to/from an Expired location (e.g., product recall batch X, expiry date 2024-01-15, disposal order #...)"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         STOCK PICKING — Tree View: flag expired transfers
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_picking_tree_expired" model="ir.ui.view">
+        <field name="name">stock.picking.tree.expired</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.vpicktree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="after">
+                <field name="involves_expired_location" optional="show" string="Expired?"
+                       widget="boolean_favorite"
+                       decoration-danger="involves_expired_location == True"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         STOCK PICKING — Search: filter expired transfers
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_picking_search_expired" model="ir.ui.view">
+        <field name="name">stock.picking.search.expired</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+        <field name="arch" type="xml">
+            <filter name="picking_type" position="after">
+                <filter
+                    name="involves_expired_location"
+                    string="Expired Location Transfers"
+                    domain="[('involves_expired_location','=',True)]"/>
+            </filter>
+        </field>
+    </record>
+
+</odoo>

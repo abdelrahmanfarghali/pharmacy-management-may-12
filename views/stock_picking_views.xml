@@ -3,6 +3,7 @@
 
     <!-- ══════════════════════════════════════════════════════════
          STOCK PICKING — Form View: Expired Transfer Reason
+         Odoo v18 compatible — role + title fixes applied
     ══════════════════════════════════════════════════════════ -->
     <record id="view_picking_form_expired_reason" model="ir.ui.view">
         <field name="name">stock.picking.form.expired.reason</field>
@@ -10,67 +11,61 @@
         <field name="inherit_id" ref="stock.view_picking_form"/>
         <field name="arch" type="xml">
 
-            <!-- Insert inside sheet -->
+            <!-- Hidden computed field — needed for invisible conditions -->
             <xpath expr="//sheet" position="inside">
+                <field name="involves_expired_location" invisible="True"/>
 
-                <field name="involves_expired_location" invisible="1"/>
-
-                <!-- Warning banner -->
+                <!-- Warning banner — role="alert" required by Odoo v18 accessibility -->
                 <div class="alert alert-danger o_expired_location_warning"
+                     role="alert"
                      invisible="not involves_expired_location">
-
-                    <i class="fa fa-exclamation-triangle me-2"/>
-
+                    <i class="fa fa-exclamation-triangle me-2"
+                       title="Expired Location Warning"
+                       aria-label="Warning"/>
                     <strong>EXPIRED LOCATION TRANSFER</strong>
-                    — This transfer involves a quarantined
-                    Expired location. A transfer reason is
-                    <strong>mandatory</strong>.
-
-                    Expired stock must never re-enter
-                    the active supply chain.
+                    — This transfer involves a quarantined Expired location.
+                    A transfer reason is <strong>mandatory</strong>.
+                    Expired stock must never re-enter the active supply chain.
                 </div>
-
             </xpath>
 
-            <!-- Reason field -->
-            <field name="note" position="after">
-
+            <!-- Expired Transfer Reason field — inserted after the note field -->
+            <xpath expr="//field[@name='note']" position="after">
                 <field
                     name="expired_transfer_reason"
                     string="⚠ Expired Transfer Reason"
                     invisible="not involves_expired_location"
-                    placeholder="Mandatory: explain why this stock is being moved to/from an Expired location (e.g., product recall batch X, expiry date 2024-01-15, disposal order #...)"/>
-
-            </field>
+                    placeholder="Mandatory: explain why this stock is being moved to/from an Expired location"/>
+            </xpath>
 
         </field>
     </record>
 
+
     <!-- ══════════════════════════════════════════════════════════
-         STOCK PICKING — Tree View
+         STOCK PICKING — List View: Expired flag column
+         Odoo v18: list (not tree)
     ══════════════════════════════════════════════════════════ -->
-    <record id="view_picking_tree_expired" model="ir.ui.view">
-        <field name="name">stock.picking.tree.expired</field>
+    <record id="view_picking_list_expired" model="ir.ui.view">
+        <field name="name">stock.picking.list.expired</field>
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.vpicktree"/>
         <field name="arch" type="xml">
 
-            <field name="state" position="after">
-
+            <xpath expr="//field[@name='state']" position="after">
                 <field
                     name="involves_expired_location"
                     optional="show"
                     string="Expired?"
-                    widget="boolean_favorite"
                     decoration-danger="involves_expired_location == True"/>
-
-            </field>
+            </xpath>
 
         </field>
     </record>
 
+
     <!-- ══════════════════════════════════════════════════════════
-         STOCK PICKING — Search Filter
+         STOCK PICKING — Search View: Expired filter
     ══════════════════════════════════════════════════════════ -->
     <record id="view_picking_search_expired" model="ir.ui.view">
         <field name="name">stock.picking.search.expired</field>
@@ -78,14 +73,12 @@
         <field name="inherit_id" ref="stock.view_picking_internal_search"/>
         <field name="arch" type="xml">
 
-            <filter name="picking_type" position="after">
-
+            <xpath expr="//filter[@name='picking_type']" position="after">
                 <filter
                     name="involves_expired_location"
                     string="Expired Location Transfers"
-                    domain="[('involves_expired_location','=',True)]"/>
-
-            </filter>
+                    domain="[('involves_expired_location', '=', True)]"/>
+            </xpath>
 
         </field>
     </record>

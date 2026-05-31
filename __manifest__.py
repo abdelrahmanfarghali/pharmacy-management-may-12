@@ -32,11 +32,21 @@
         'views/stock_quant_views.xml',
         'views/product_views.xml',
         'views/stock_expiry_detection_views.xml',
+        # SC2-UC-02 — MM/YYYY expiry date display on stock.lot
+        'views/stock_lot_views.xml',
+        # SC2-UC-05 — Expired Medicines Page + Bulk Transfer
+        'views/expired_medicines_views.xml',
     ],
     'assets': {
         'web.assets_backend': [
             'pharmacy_expired_location/static/src/css/expired_location.css',
         ],
+        
+        # 'point_of_sale._assets_pos': [
+        #     'pharmacy_expired_location/static/src/js/pos_expiry_check.js',
+    
+        # ],
+    
     },
     'installable': True,
     'application': False,

@@ -60,7 +60,10 @@ class StockPicking(models.Model):
         Enforce:
         1. Transfers OUT of Expired must go to Scrap or another Expired — never to Internal/Customer.
         2. Expired transfer reason is mandatory when any Expired location is involved.
+           (Skipped when context skip_expired_reason_check=True — used by bulk transfer SC2-UC-05)
         """
+        skip_reason_check = self.env.context.get('skip_expired_reason_check', False)
+
         for move in self.move_ids:
             src = move.location_id
             dst = move.location_dest_id
@@ -91,7 +94,7 @@ class StockPicking(models.Model):
                     )
 
         # Rule 2 — Mandatory reason note
-        if self.involves_expired_location and not (self.expired_transfer_reason or '').strip():
+        if not skip_reason_check and self.involves_expired_location and not (self.expired_transfer_reason or '').strip():
             raise UserError(
                 _(
                     'A transfer reason is mandatory for any operation involving an '

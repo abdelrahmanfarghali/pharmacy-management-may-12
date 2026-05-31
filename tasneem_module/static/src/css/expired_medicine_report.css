@@ -1,0 +1,26 @@
+.o_expired_report_dashboard {
+    background-color: var(--o-view-background-color, #f9f9f9);
+}
+
+.o_expired_report_dashboard .cursor-pointer {
+    cursor: pointer;
+    user-select: none;
+}
+
+.o_expired_report_dashboard .cursor-pointer:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.o_expired_report_dashboard select[multiple] {
+    min-width: 200px;
+    height: 38px; /* Match single-line input height visually but let it be a dropdown */
+}
+
+/* Make multi-select look decent if it doesn't use select2 automatically */
+.o_expired_report_dashboard select[multiple] option {
+    padding: 4px 8px;
+}
+
+.o_expired_report_dashboard .table th i.fa {
+    color: var(--o-brand-primary, #017e84);
+}

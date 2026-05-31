@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Report Action -->
+    <record id="action_report_expired_medicine" model="ir.actions.report">
+        <field name="name">Expired Medicines Report</field>
+        <field name="model">stock.quant</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">tasneem_module.report_expired_medicine</field>
+        <field name="report_file">tasneem_module.report_expired_medicine</field>
+        <!-- The print_report_name python expression evaluated with `context` dictionary -->
+        <field name="print_report_name">'Expired_Medicines_%s_%s' % (context.get('branch_name', 'All_Branches').replace(' ', '_'), context.get('month_year', 'All_Time'))</field>
+        <field name="paperformat_id" ref="tasneem_module.paperformat_euro_landscape"/>
+    </record>
+
+    <!-- QWeb Template -->
+    <template id="report_expired_medicine">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <div class="oe_structure"/>
+                    <h2 class="text-center mt-4 mb-4">Expired Medicines Report</h2>
+
+                    <div class="row mb-4">
+                        <div class="col-4">
+                            <strong>Branch Name:</strong>
+                            <p t-esc="branch_name"/>
+                        </div>
+                        <div class="col-4">
+                            <strong>Selected Month/Year:</strong>
+                            <p t-esc="month_year"/>
+                        </div>
+                        <div class="col-4">
+                            <strong>Generation Date:</strong>
+                            <p t-esc="generation_datetime"/>
+                        </div>
+                    </div>
+
+                    <table class="table table-sm table-striped mt-4">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Medicine Name</th>
+                                <th>Expiry Date</th>
+                                <th class="text-end">Unit Price</th>
+                                <th class="text-end">Quantity</th>
+                                <th class="text-end">Total Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-if="not report_data">
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No expired medicines found for the selected criteria.</td>
+                                </tr>
+                            </t>
+                            <tr t-foreach="report_data" t-as="row">
+                                <td><span t-esc="row['medicine_name']"/></td>
+                                <td><span t-esc="row['expiry_date']"/></td>
+                                <td class="text-end"><span t-esc="'%.2f' % row['price']"/></td>
+                                <td class="text-end"><span t-esc="'%.2f' % row['quantity']"/></td>
+                                <td class="text-end"><span t-esc="'%.2f' % row['total_price']"/></td>
+                            </tr>
+                        </tbody>
+                        <tfoot t-if="report_data">
+                            <tr>
+                                <td colspan="4" class="text-end fw-bold">Grand Total</td>
+                                <td class="text-end fw-bold"><span t-esc="'%.2f' % grand_total"/></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div class="oe_structure"/>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

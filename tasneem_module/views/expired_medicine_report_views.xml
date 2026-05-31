@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Client Action for Expired Medicine Report -->
+    <record id="action_expired_medicine_report" model="ir.actions.client">
+        <field name="name">Expired Medicines Report</field>
+        <field name="tag">expired_medicine_report_action</field>
+    </record>
+
+    <!-- Menu Item under Inventory > Reporting -->
+    <menuitem id="menu_expired_medicine_report"
+              name="Expired Medicines Report"
+              parent="stock.menu_warehouse_report"
+              action="action_expired_medicine_report"
+              sequence="150"/>
+</odoo>

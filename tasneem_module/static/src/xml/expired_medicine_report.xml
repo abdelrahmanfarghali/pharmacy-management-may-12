@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="tasneem_module.ExpiredMedicineReport" owl="1">
+        <div class="o_expired_report_dashboard h-100 overflow-auto">
+            <div class="o_control_panel">
+                <div class="o_cp_top">
+                    <div class="o_cp_top_left">
+                        <ol class="breadcrumb" role="navigation">
+                            <li class="breadcrumb-item active">Expired Medicines Report</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="o_cp_bottom">
+                    <div class="o_cp_bottom_left">
+                        <div class="d-flex align-items-center gap-3 py-2">
+                            <div class="filter-group">
+                                <label for="monthYear" class="fw-bold me-2">Expiry Month:</label>
+                                <input type="month" id="monthYear" t-model="state.monthYear" class="form-control d-inline-block w-auto" />
+                            </div>
+                            <div class="filter-group">
+                                <label for="locationSelect" class="fw-bold me-2">Locations (Multi):</label>
+                                <select id="locationSelect" multiple="multiple" class="form-select d-inline-block w-auto" t-on-change="handleLocationChange">
+                                    <t t-foreach="state.locations" t-as="loc" t-key="loc.id">
+                                        <option t-att-value="loc.id"><t t-esc="loc.display_name"/></option>
+                                    </t>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" t-on-click="generateReport">
+                                <i class="fa fa-refresh me-1"/> Generate Report
+                            </button>
+                            <button class="btn btn-outline-danger" t-on-click="exportPDF">
+                                <i class="fa fa-file-pdf-o me-1"/> Export PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="o_content p-4">
+                <div class="table-responsive bg-view shadow-sm rounded">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="cursor-pointer" t-on-click="() => this.toggleSort('medicine_name')">
+                                    Medicine Name
+                                    <i t-if="state.sortColumn === 'medicine_name'" t-attf-class="fa fa-sort-{{ state.sortAscending ? 'up' : 'down' }} ms-1"/>
+                                </th>
+                                <th class="cursor-pointer" t-on-click="() => this.toggleSort('expiry_date')">
+                                    Expiry Date
+                                    <i t-if="state.sortColumn === 'expiry_date'" t-attf-class="fa fa-sort-{{ state.sortAscending ? 'up' : 'down' }} ms-1"/>
+                                </th>
+                                <th class="cursor-pointer text-end" t-on-click="() => this.toggleSort('price')">
+                                    Unit Price
+                                    <i t-if="state.sortColumn === 'price'" t-attf-class="fa fa-sort-{{ state.sortAscending ? 'up' : 'down' }} ms-1"/>
+                                </th>
+                                <th class="cursor-pointer text-end" t-on-click="() => this.toggleSort('quantity')">
+                                    Quantity
+                                    <i t-if="state.sortColumn === 'quantity'" t-attf-class="fa fa-sort-{{ state.sortAscending ? 'up' : 'down' }} ms-1"/>
+                                </th>
+                                <th class="cursor-pointer text-end" t-on-click="() => this.toggleSort('total_price')">
+                                    Total Price
+                                    <i t-if="state.sortColumn === 'total_price'" t-attf-class="fa fa-sort-{{ state.sortAscending ? 'up' : 'down' }} ms-1"/>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-if="state.reportData.length === 0">
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    No data available. Apply filters and click "Generate Report".
+                                </td>
+                            </tr>
+                            <tr t-foreach="state.reportData" t-as="row" t-key="row.medicine_name + '_' + row.expiry_date">
+                                <td><t t-esc="row.medicine_name"/></td>
+                                <td><t t-esc="row.expiry_date"/></td>
+                                <td class="text-end"><t t-esc="row.price.toFixed(2)"/></td>
+                                <td class="text-end"><t t-esc="row.quantity.toFixed(2)"/></td>
+                                <td class="text-end fw-bold"><t t-esc="row.total_price.toFixed(2)"/></td>
+                            </tr>
+                        </tbody>
+                        <tfoot t-if="state.reportData.length > 0">
+                            <tr class="table-dark">
+                                <td colspan="4" class="text-end fw-bold">Grand Total:</td>
+                                <td class="text-end fw-bold"><t t-esc="grandTotal.toFixed(2)"/></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════
+         STOCK LOCATION — List View: red badge for Expired type
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_location_form_expired" model="ir.ui.view">
+        <field name="name">stock.location.form.expired</field>
+        <field name="model">stock.location</field>
+        <field name="inherit_id" ref="stock.view_location_form"/>
+        <field name="arch" type="xml">
+            <!-- Add Expired Transfer Reason field on location form -->
+            <field name="comment" position="after">
+                <field name="expired_transfer_note"
+                    invisible="usage != 'expired'"
+                    placeholder="Default reason for transfers to/from this Expired location (optional)"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         STOCK LOCATION — Tree View: show Expired badge in red
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_location_tree_expired" model="ir.ui.view">
+        <field name="name">stock.location.tree.expired</field>
+        <field name="model">stock.location</field>
+        <field name="inherit_id" ref="stock.view_location_tree2"/>
+        <field name="arch" type="xml">
+            <field name="usage" position="attributes">
+                <attribute name="decoration-danger">usage == 'expired'</attribute>
+                <attribute name="widget">badge</attribute>
+            </field>
+            <!-- Add is_expired_location column for quick visibility -->
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         STOCK LOCATION — Search View: filter for Expired locations
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_location_search_expired" model="ir.ui.view">
+        <field name="name">stock.location.search.expired</field>
+        <field name="model">stock.location</field>
+        <field name="inherit_id" ref="stock.view_location_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+
+            <filter
+                name="expired_locations"
+                string="Expired Locations"
+                domain="[('usage','=','expired')]"/>
+
+        </xpath>
+        </field>
+    </record>
+
+</odoo>

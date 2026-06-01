@@ -1,0 +1,26 @@
+from odoo import models, api, _
+from odoo.exceptions import ValidationError
+from datetime import date
+
+
+class SaleOrder(models.Model):
+    _inherit = "sale.order"
+
+    def action_confirm(self):
+        today = date.today()
+
+        for order in self:
+            for line in order.order_line:
+
+                lots = self.env['stock.lot'].search([
+                    ('product_id', '=', line.product_id.id),
+                    ('expiration_date', '<=', today)
+                ])
+
+                if lots:
+                    raise ValidationError(_(
+                        "Cannot confirm sale.\n"
+                        "Product %s contains expired lots."
+                    ) % line.product_id.display_name)
+
+        return super().action_confirm()

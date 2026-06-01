@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="0">
+
+    <!--
+        Demo: Pre-create one Expired location per company
+        so the system is immediately usable after install.
+        noupdate="1" means this only runs on first install.
+    -->
+
+    <!-- Virtual / parent location for all Expired areas (View type) -->
+    <record id="location_expired_all" model="stock.location">
+        <field name="name">Expired Products (All Branches)</field>
+        <field name="usage">view</field>    
+        <field name="location_id" ref="stock.stock_location_locations"/>
+        <field name="active">True</field>
+        <field name="comment">Parent view location for all Expired quarantine sub-locations.</field>
+    </record>
+
+    <!-- Default Expired quarantine location — Main Warehouse -->
+    <record id="location_expired_main" model="stock.location">
+        <field name="name">Expired — Main Warehouse</field>
+        <field name="usage">expired</field>
+        <field name="location_id" ref="location_expired_all"/>
+        <field name="active">True</field>
+        <field name="comment">
+            QUARANTINE ZONE — Expired Products.
+            Stock here is EXCLUDED from POS and sales calculations.
+            Transfers out restricted to Scrap locations only.
+        </field>
+    </record>
+
+</odoo>

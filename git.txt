@@ -1,0 +1,6 @@
+git init
+git remote add module2 https://github.com/a-mfarghly/pharmacy-management-may-12.git
+git checkout -b tasneem-module
+git add .
+git commit -m "Tasneem pharmacy updates"
+git push module2 tasneem-module

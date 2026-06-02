@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Purchase Order Tracking — Owl template overrides (Odoo 18)
+
+    Only one template is needed: a PRIMARY copy of web.ListRenderer.GroupRow
+    with the reception badge injected into the group header row.
+
+    The PurchaseTrackingListRenderer JS class points its static
+    `groupRowTemplate` property at this template name, so the main
+    web.ListRenderer template is never patched and no other list view
+    is affected.
+
+    t-inherit-mode="primary" creates a STANDALONE copy of the base template
+    (not a patch), which is what a renderer subclass needs when it overrides
+    the `groupRowTemplate` static property.
+-->
+<templates xml:space="preserve">
+
+    <!--
+        Primary override of the group-header row template.
+
+        Inherits: web.ListRenderer.GroupRow  (Odoo 18 source, list_renderer.xml)
+        Mode:     primary  →  produces a new standalone template
+
+        Target injection point:
+            Inside the <div class="d-flex align-items-center"> header flex box,
+            immediately BEFORE the pager div (<div t-if="showGroupPager(group)">).
+            This places the badge between the "(count)" label and the pager,
+            which is visually correct and avoids collision with the group-edit
+            buttons (o_group_buttons) that may appear on the left.
+
+        Badge rendering is intentionally done with plain t-attf-class / t-esc —
+        no Owl sub-component is used — so there are no extra component
+        registration requirements.
+    -->
+    <t t-name="pharmacy_expired_location.PurchaseTrackingGroupRow"
+       t-inherit="web.ListRenderer.GroupRow"
+       t-inherit-mode="primary">
+
+        <!--
+            XPath targets the pager container <div t-if="showGroupPager(group)">.
+            position="before" inserts our badge immediately before the pager.
+
+            If the pager is hidden (showGroupPager returns false), the badge
+            still renders correctly because the XPath targets the *element*
+            in the template source, not the runtime DOM.
+        -->
+        <xpath expr="//div[@t-if='showGroupPager(group)']" position="before">
+            <span
+                t-if="showGroupBadge(group)"
+                t-attf-class="{{ getGroupBadgeClass(group) }}"
+                t-esc="getGroupBadgeLabel(group)"
+            />
+        </xpath>
+
+    </t>
+
+</templates>

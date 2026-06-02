@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         SEARCH VIEW — 3 placeholder filters · 2 placeholder group-bys
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_po_tracking_search" model="ir.ui.view">
+        <field name="name">purchase.order.line.tracking.search</field>
+        <field name="model">purchase.order.line</field>
+        <field name="arch" type="xml">
+            <search string="Purchase Order Tracking">
+
+                <!-- Quick-search fields -->
+                <field name="order_id"   string="Purchase Order"/>
+                <field name="product_id" string="Product"/>
+
+                <!--
+                    Default group-by: invisible filter activated by action context
+                    { 'search_default_group_by_order': 1 }
+                    so the view always opens grouped by Purchase Order.
+                -->
+                <filter
+                    name="group_by_order"
+                    string="Purchase Order"
+                    context="{'group_by': 'order_id'}"
+                    invisible="1"
+                />
+
+                <!-- ── 3 Placeholder Filters ──────────────────────────────
+                     Replace `domain="[]"` with real filter criteria, e.g.:
+                       domain="[('tracking_status','=','pending')]"
+                     ─────────────────────────────────────────────────────── -->
+                <filter
+                    name="filter_placeholder_1"
+                    string="[Filter Option 1]"
+                    domain="[]"
+                />
+                <filter
+                    name="filter_placeholder_2"
+                    string="[Filter Option 2]"
+                    domain="[]"
+                />
+                <filter
+                    name="filter_placeholder_3"
+                    string="[Filter Option 3]"
+                    domain="[]"
+                />
+
+                <separator/>
+
+                <!-- ── 2 Placeholder Group Bys ────────────────────────────
+                     Replace `''` in context with a real field name, e.g.:
+                       context="{'group_by': 'tracking_status'}"
+                     ─────────────────────────────────────────────────────── -->
+                <group string="Group By">
+                    <filter
+                        name="group_by_placeholder_1"
+                        string="[Group By Option 1]"
+                        context="{'group_by': ''}"
+                    />
+                    <filter
+                        name="group_by_placeholder_2"
+                        string="[Group By Option 2]"
+                        context="{'group_by': ''}"
+                    />
+                </group>
+
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         LIST VIEW — 7 columns · custom renderer for group badges
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_po_tracking_list" model="ir.ui.view">
+        <field name="name">purchase.order.line.tracking.list</field>
+        <field name="model">purchase.order.line</field>
+        <field name="arch" type="xml">
+            <!--
+                js_class="purchase_tracking_list" binds the custom Owl renderer
+                (PurchaseTrackingListRenderer) that injects reception badges into
+                the purchase-order group header rows.
+
+                expand="1" opens all groups on load — appropriate for a tracking
+                screen where operators need an at-a-glance overview.
+            -->
+            <list
+                string="Purchase Order Tracking"
+                js_class="purchase_tracking_list"
+                expand="1"
+                editable="0"
+                multi_edit="0"
+            >
+                <!-- ── Column 1: Product ─────────────────────────────────────
+                     product_id.display_name already follows "[REF] Name" format
+                     when default_code is set — no extra computed field needed.
+                     ────────────────────────────────────────────────────────── -->
+                <field
+                    name="product_id"
+                    string="Product"
+                    optional="show"
+                    readonly="1"
+                />
+
+                <!-- ── Columns 2–6: Placeholder Tracking Fields ─────────────
+                     Rename strings and/or swap these fields as requirements
+                     solidify. All are declared optional="show" so they render
+                     by default but can be hidden via the column picker.
+                     ────────────────────────────────────────────────────────── -->
+                <field
+                    name="tracking_ref"
+                    string="Tracking Ref."
+                    optional="show"
+                />
+                <field
+                    name="tracking_origin"
+                    string="Origin"
+                    optional="show"
+                />
+                <field
+                    name="tracking_carrier"
+                    string="Carrier"
+                    optional="show"
+                />
+                <field
+                    name="tracking_eta"
+                    string="ETA"
+                    optional="show"
+                />
+                <field
+                    name="tracking_status"
+                    string="Track Status"
+                    optional="show"
+                    widget="badge"
+                    decoration-success="tracking_status == 'received'"
+                    decoration-warning="tracking_status == 'partial'"
+                    decoration-info="tracking_status == 'in_transit'"
+                    decoration-muted="tracking_status == 'pending'"
+                />
+
+                <!-- ── Column 7: Computed — Qty. Not Received ────────────────
+                     sum="Total Not Received" is what populates
+                     group.aggregates.qty_not_received, which the custom renderer
+                     reads to decide which badge to show on each group header.
+                     ────────────────────────────────────────────────────────── -->
+                <field
+                    name="qty_not_received"
+                    string="Qty. Not Received"
+                    sum="Total Not Received"
+                    optional="show"
+                    readonly="1"
+                />
+
+            </list>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         WINDOW ACTION
+         ═══════════════════════════════════════════════════════════════════════ -->
+    <record id="action_po_tracking" model="ir.actions.act_window">
+        <field name="name">Purchase Order Tracking</field>
+        <field name="res_model">purchase.order.line</field>
+        <field name="view_mode">list</field>
+        <field name="view_ids"
+               eval="[(5, 0, 0),
+                      (0, 0, {'view_mode': 'list',
+                              'view_id':   ref('view_po_tracking_list')})]"/>
+        <field name="search_view_id" ref="view_po_tracking_search"/>
+        <!--
+            search_default_group_by_order=1 activates the invisible
+            "group_by_order" filter on page load, so lines are always
+            grouped by Purchase Order when the screen first opens.
+        -->
+        <field name="context">{'search_default_group_by_order': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No purchase order lines to track yet.
+            </p>
+            <p>
+                Confirm a Purchase Order to start tracking reception status.
+            </p>
+        </field>
+    </record>
+
+</odoo>

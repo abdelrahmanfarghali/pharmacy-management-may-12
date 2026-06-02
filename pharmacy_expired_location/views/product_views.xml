@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════
+         PRODUCT TEMPLATE — Form View stat button for expired qty
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_product_template_form_expired" model="ir.ui.view">
+        <field name="name">product.template.form.expired</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Add Expired stock stat button in the button_box -->
+            <div name="button_box" position="inside">
+                <button
+                    class="oe_stat_button o_expired_qty_button"
+                    type="object"
+                    name="action_open_expired_quants"
+                    icon="fa-exclamation-triangle"
+                    invisible="[('qty_expired', '=', 0.0)]"
+                    help="View expired stock in quarantine locations">
+                    <field
+                        name="qty_expired"
+                        widget="statinfo"
+                        string="Expired"
+                        class="text-danger"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         PRODUCT PRODUCT — Form View: expired qty stat button
+         (variant-level)
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_product_product_form_expired" model="ir.ui.view">
+        <field name="name">product.product.form.expired</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_variant_easy_edit_view"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button
+                    class="oe_stat_button o_expired_qty_button"
+                    type="object"
+                    name="action_open_expired_quants"
+                    icon="fa-exclamation-triangle"
+                    invisible="[('qty_expired', '=', 0.0)]"
+                    help="View expired stock in quarantine locations">
+                    <field
+                        name="qty_expired"
+                        widget="statinfo"
+                        string="Expired"
+                        class="text-danger"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+</odoo>

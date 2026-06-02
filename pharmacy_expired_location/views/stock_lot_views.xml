@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════
+         SC2-UC-02 — Stock Lot Form: MM/YYYY expiry input
+         Odoo v18 — inherits from product_expiry view
+         expiration_date is inside page[@name='expiration_dates']
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_lot_form_mmyyyy" model="ir.ui.view">
+        <field name="name">stock.lot.form.mmyyyy</field>
+        <field name="model">stock.lot</field>
+        <!-- <field name="inherit_id" ref="product_expiry.view_move_form_expiry"/> -->
+        <!-- <field name="inherit_id" ref="stock.view_production_lot_form"/> -->
+        <field name="inherit_id" ref="product_expiry.view_move_form_expiry"/>
+        <field name="arch" type="xml">
+
+            <!-- Hide the raw expiration_date field -->
+            <!-- <xpath expr="//field[@name='expiration_date']" position="attributes">
+                <attribute name="invisible">True</attribute>
+            </xpath> -->
+
+            <!-- Insert MM/YYYY input directly after the hidden field -->
+            <!-- <xpath expr="//field[@name='expiration_date']" position="after">
+                <field
+                    name="expiry_month_year"
+                    string="Expiry Date (MM/YYYY)"
+                    placeholder="MM/YYYY — e.g. 03/2027"
+                    help="Enter expiry as MM/YYYY. Stored internally as the last day of that month (industry standard)."/>
+                <field
+                    name="expiry_display"
+                    string="Stored Expiry"
+                    readonly="True"
+                    invisible="not expiry_display"
+                    help="Confirmed stored expiry — last day of entered month."/>
+            </xpath> -->
+            <!-- استهدف الـ page كلها مش الـ field -->
+        <xpath expr="//page[@name='expiration_dates']//field[@name='expiration_date']"
+               position="attributes">
+            <attribute name="invisible">True</attribute>
+        </xpath>
+
+        <xpath expr="//page[@name='expiration_dates']//field[@name='expiration_date']"
+               position="after">
+            <field
+                name="expiry_month_year"
+                string="Expiry Date (MM/YYYY)"
+                placeholder="MM/YYYY — e.g. 03/2027"/>
+            <field
+                name="expiry_display"
+                string="Stored Expiry"
+                readonly="True"
+                invisible="not expiry_display"/>
+        </xpath>
+        </field>
+    </record>
+
+
+    <!-- ══════════════════════════════════════════════════════════
+         SC2-UC-02 — Stock Lot List View: MM/YYYY column
+         Odoo v18 — inherits from product_expiry list view
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_lot_list_mmyyyy" model="ir.ui.view">
+        <field name="name">stock.lot.list.mmyyyy</field>
+        <field name="model">stock.lot</field>
+        <!-- <field name="inherit_id" ref="product_expiry.view_production_lot_view_tree"/> -->
+        <field name="inherit_id" ref="stock.view_production_lot_tree"/>
+        <field name="arch" type="xml">
+
+            <!-- Hide the raw expiration_date column -->
+            <xpath expr="//field[@name='expiration_date']" position="attributes">
+                <attribute name="column_invisible">True</attribute>
+                <attribute name="optional">hide</attribute>
+            </xpath>
+
+            <!-- Add MM/YYYY display column after it -->
+            <xpath expr="//field[@name='expiration_date']" position="after">
+                <field
+                    name="expiry_display"
+                    string="Expiry (MM/YYYY)"
+                    optional="show"/>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

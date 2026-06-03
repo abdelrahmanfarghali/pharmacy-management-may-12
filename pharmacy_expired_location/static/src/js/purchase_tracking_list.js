@@ -18,8 +18,66 @@
  */
 
 import { ListRenderer } from "@web/views/list/list_renderer";
+import { ListController } from "@web/views/list/list_controller";
 import { listView } from "@web/views/list/list_view";
 import { registry } from "@web/core/registry";
+import { download } from "@web/core/network/download";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Custom controller
+// ─────────────────────────────────────────────────────────────────────────────
+export class PurchaseTrackingListController extends ListController {
+    /**
+     * Toggles all groups recursively. If at least one group is folded, it expands all.
+     * Otherwise, it collapses all groups.
+     */
+    async toggleAllGroups() {
+        const rootList = this.model.root;
+        if (!rootList || !rootList.isGrouped || !rootList.groups) {
+            return;
+        }
+        const hasFolded = rootList.groups.some((group) => group.isFolded);
+        const expand = hasFolded;
+        // Store the target state so the UI can reflect it.
+        this._allExpanded = expand;
+
+        const toggleGroupRecursive = async (list) => {
+            if (!list || !list.isGrouped || !list.groups) {
+                return;
+            }
+            const promises = [];
+            for (const group of list.groups) {
+                if (expand) {
+                    if (group.isFolded) {
+                        promises.push(group.toggle().then(() => toggleGroupRecursive(group.list)));
+                    } else {
+                        promises.push(toggleGroupRecursive(group.list));
+                    }
+                } else {
+                    if (!group.isFolded) {
+                        promises.push(group.toggle());
+                    }
+                    promises.push(toggleGroupRecursive(group.list));
+                }
+            }
+            await Promise.all(promises);
+        };
+        await toggleGroupRecursive(rootList);
+    }
+
+    /**
+     * Exports the filtered list records directly to an Excel sheet.
+     */
+    async exportToExcel() {
+        await download({
+            data: {
+                domain: JSON.stringify(this.model.root.domain),
+                groupby: JSON.stringify(this.model.root.groupBy),
+            },
+            url: `/web/purchase_tracking/export_xlsx`,
+        });
+    }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Custom renderer
@@ -61,6 +119,24 @@ export class PurchaseTrackingListRenderer extends ListRenderer {
     showGroupBadge(group) {
         return group.count > 0;
     }
+
+    /**
+     * @override
+     */
+    getCellClass(column, record) {
+        let classes = super.getCellClass(column, record);
+        if (column.name === "date_planned" && record.data.date_planned) {
+            const qtyNotReceived = record.data.qty_not_received !== undefined ? record.data.qty_not_received : 1.0;
+            if (qtyNotReceived > 0) {
+                const val = record.data.date_planned;
+                const datePlanned = typeof val.toJSDate === "function" ? val.toJSDate() : new Date(val);
+                if (!isNaN(datePlanned.getTime()) && datePlanned < new Date()) {
+                    classes += " o_po_overdue_date";
+                }
+            }
+        }
+        return classes;
+    }
 }
 
 // Point the renderer at our primary (standalone) template override.
@@ -74,7 +150,9 @@ PurchaseTrackingListRenderer.groupRowTemplate =
 
 export const purchaseTrackingListView = {
     ...listView,
+    Controller: PurchaseTrackingListController,
     Renderer: PurchaseTrackingListRenderer,
+    buttonTemplate: "pharmacy_expired_location.PurchaseTrackingListButtons",
 };
 
 registry

@@ -11,3 +11,4 @@ from . import expired_medicines_page
 from . import product_product
 from . import sale_order
 from . import purchase_order_line
+from . import product_ref_name

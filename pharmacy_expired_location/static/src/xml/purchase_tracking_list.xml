@@ -55,4 +55,24 @@
 
     </t>
 
+    <!--
+        Primary override of the list-view buttons template.
+        Adds "Expand All" / "Collapse All" buttons to the control panel
+        when the list is grouped by a field.
+    -->
+    <t t-name="pharmacy_expired_location.PurchaseTrackingListButtons"
+       t-inherit="web.ListView.Buttons"
+       t-inherit-mode="primary">
+        <xpath expr="//div" position="inside">
+            <t t-if="model.root.isGrouped and !editedRecord">
+                <button type="button" class="btn btn-secondary o_po_toggle_all" t-on-click="() => this.toggleAllGroups()"><t t-esc="model.root.groups.some(g => g.isFolded) ? 'Expand All' : 'Collapse All'"/></button>
+            </t>
+            <t t-if="!editedRecord">
+                <button type="button" class="btn btn-secondary o_po_export_excel" t-on-click="() => this.exportToExcel()">
+                    <i class="fa fa-download me-1"/> Export to Excel
+                </button>
+            </t>
+        </xpath>
+    </t>
+
 </templates>

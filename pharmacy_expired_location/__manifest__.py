@@ -22,6 +22,7 @@
         'point_of_sale',
         'sale_stock',
         'mail',
+        'purchase',
     ],
     'data': [
         'security/ir.model.access.csv',
@@ -41,6 +42,8 @@
     'assets': {
         'web.assets_backend': [
             'pharmacy_expired_location/static/src/css/expired_location.css',
+            'pharmacy_expired_location/static/src/js/purchase_tracking_list.js',
+            'pharmacy_expired_location/static/src/xml/purchase_tracking_list.xml',
         ],
         
         # 'point_of_sale._assets_pos': [

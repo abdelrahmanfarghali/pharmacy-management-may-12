@@ -32,18 +32,18 @@
                      ─────────────────────────────────────────────────────── -->
                 <filter
                     name="filter_placeholder_1"
-                    string="[Filter Option 1]"
-                    domain="[]"
+                    string="Fully Received"
+                    domain="[('qty_not_received', '=', 0),('qty_received', '>', 0)]"
                 />
                 <filter
                     name="filter_placeholder_2"
-                    string="[Filter Option 2]"
-                    domain="[]"
+                    string="Pending Orders"
+                    domain="[('qty_received', '>', 0),('qty_not_received', '>', '0')]"
                 />
                 <filter
                     name="filter_placeholder_3"
-                    string="[Filter Option 3]"
-                    domain="[]"
+                    string="Not Received"
+                    domain="[('qty_not_received', '>', 0),('qty_received', '=', 0)]"
                 />
 
                 <separator/>
@@ -55,16 +55,20 @@
                 <group string="Group By">
                     <filter
                         name="group_by_placeholder_1"
-                        string="[Group By Option 1]"
-                        context="{'group_by': ''}"
+                        string="By Date"
+                        context="{'group_by': 'date_order'}"
                     />
                     <filter
                         name="group_by_placeholder_2"
-                        string="[Group By Option 2]"
-                        context="{'group_by': ''}"
+                        string="By Vendor"
+                        context="{'group_by': 'partner_id'}"
                     />
                 </group>
-
+                <group>
+                    <filter name="order_id" string="By Reference Number" domain="[('order_id.name', '!=', False)]"/>
+                    <filter name="product_id" string="By Product Name/Code" domain="[('product_id.display_name', '!=', False)]"/>
+                    <filter name="partner_id" string="By Vendor Name" domain="[('partner_id.name', '!=', False)]"/>
+                </group>
             </search>
         </field>
     </record>
@@ -87,62 +91,36 @@
             <list
                 string="Purchase Order Tracking"
                 js_class="purchase_tracking_list"
-                expand="1"
-                editable="0"
-                multi_edit="0"
-            >
+                expand="1">
                 <!-- ── Column 1: Product ─────────────────────────────────────
                      product_id.display_name already follows "[REF] Name" format
                      when default_code is set — no extra computed field needed.
                      ────────────────────────────────────────────────────────── -->
                 <field
-                    name="product_id"
+                    name="list_name"
                     string="Product"
                     optional="show"
                     readonly="1"
                 />
-
-                <!-- ── Columns 2–6: Placeholder Tracking Fields ─────────────
-                     Rename strings and/or swap these fields as requirements
-                     solidify. All are declared optional="show" so they render
-                     by default but can be hidden via the column picker.
-                     ────────────────────────────────────────────────────────── -->
-                <field
-                    name="tracking_ref"
-                    string="Tracking Ref."
-                    optional="show"
-                />
-                <field
-                    name="tracking_origin"
-                    string="Origin"
-                    optional="show"
-                />
-                <field
-                    name="tracking_carrier"
-                    string="Carrier"
-                    optional="show"
-                />
-                <field
-                    name="tracking_eta"
-                    string="ETA"
-                    optional="show"
-                />
-                <field
-                    name="tracking_status"
-                    string="Track Status"
-                    optional="show"
-                    widget="badge"
-                    decoration-success="tracking_status == 'received'"
-                    decoration-warning="tracking_status == 'partial'"
-                    decoration-info="tracking_status == 'in_transit'"
-                    decoration-muted="tracking_status == 'pending'"
-                />
-
-                <!-- ── Column 7: Computed — Qty. Not Received ────────────────
+                
+                
+                <!-- ── Column 2-4: Computed — Qty. Not Received ────────────────
                      sum="Total Not Received" is what populates
                      group.aggregates.qty_not_received, which the custom renderer
                      reads to decide which badge to show on each group header.
                      ────────────────────────────────────────────────────────── -->
+                <field
+                    name="qty_invoiced"
+                    string="Qty. Ordered"
+                    optional="show"
+                    readonly="1"
+                />
+                <field
+                    name="qty_received"
+                    string="Qty. Received"
+                    optional="show"
+                    readonly="1"
+                />
                 <field
                     name="qty_not_received"
                     string="Qty. Not Received"
@@ -151,6 +129,32 @@
                     readonly="1"
                 />
 
+                <!-- ── Columns 5–7: Placeholder Tracking Fields ─────────────
+                     Rename strings and/or swap these fields as requirements
+                     solidify. All are declared optional="show" so they render
+                     by default but can be hidden via the column picker.
+                     ────────────────────────────────────────────────────────── -->
+                <field 
+                    name="date_approve"
+                    string="Confirmation Date"
+                    optional="show"
+                    readonly="1"
+                    />
+                <field
+                    name="date_planned"
+                    string="Expected Arrival"
+                    optional="show"
+                />
+                <!-- <field
+                    name="tracking_status"
+                    string="Track Status"
+                    optional="show"
+                    widget="badge"
+                    decoration-success="tracking_status == 'received'"
+                    decoration-warning="tracking_status == 'partial'"
+                    decoration-info="tracking_status == 'in_transit'"
+                    decoration-muted="tracking_status == 'pending'"
+                /> -->
             </list>
         </field>
     </record>
@@ -183,4 +187,27 @@
         </field>
     </record>
 
+    <!-- ═══════════════════════════════════════════════════════════════════════
+         MENU ITEM
+         Placed under: Purchase ▸ Tracking ▸ PO Tracking
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <!-- "Tracking" sub-menu category under the Purchase root -->
+    <menuitem
+        id="menu_po_tracking_root"
+        name="Tracking"
+        parent="purchase.menu_purchase_root"
+        sequence="30"
+    />
+
+    <!-- Leaf menu item that opens the PO Tracking list view -->
+    <menuitem
+        id="menu_po_tracking"
+        name="PO Tracking"
+        parent="menu_po_tracking_root"
+        action="action_po_tracking"
+        sequence="10"
+    />
+
 </odoo>
+

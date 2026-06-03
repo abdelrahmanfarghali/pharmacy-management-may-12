@@ -95,3 +95,109 @@
     font-family: monospace;
     letter-spacing: 0.05em;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Purchase Order Tracking — Group-header reception badges
+   ══════════════════════════════════════════════════════════════ */
+
+/* Base badge: sits inline after the group label in the list header */
+.po-tracking-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    vertical-align: middle;
+    padding: 0.22em 0.65em;
+    border-radius: 999px;
+    /* pill shape */
+    white-space: nowrap;
+    transition: opacity 0.15s ease;
+}
+
+/* "Fully Received" variant — lime green pill */
+.po-tracking-badge.text-bg-success {
+    background-color: #32CD32 !important;
+    /* limegreen */
+    color: #1a3a00 !important;
+    /* dark green text for contrast */
+}
+
+/* "Pending / Partial" variant — amber pill */
+.po-tracking-badge.text-bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+/* Subtle hover lift so the badge doesn't look static */
+.o_group_header:hover .po-tracking-badge {
+    opacity: 0.85;
+}
+
+/* ── Tracking status column — coloured badge widget overrides ─── */
+
+/* "Received" → green */
+.o_list_view .o_field_badge[data-field="tracking_status"] .badge[data-value="received"] {
+    background-color: #198754 !important;
+    color: #fff !important;
+}
+
+/* "In Transit" → blue */
+.o_list_view .o_field_badge[data-field="tracking_status"] .badge[data-value="in_transit"] {
+    background-color: #0d6efd !important;
+    color: #fff !important;
+}
+
+/* "Partial" → amber */
+.o_list_view .o_field_badge[data-field="tracking_status"] .badge[data-value="partial"] {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+/* "Pending" → muted grey */
+.o_list_view .o_field_badge[data-field="tracking_status"] .badge[data-value="pending"] {
+    background-color: #6c757d !important;
+    color: #fff !important;
+}
+
+/* ── Expected Arrival column — highlight overdue dates ───────── */
+.o_list_view .o_data_row td.o_po_overdue_date {
+    background-color: rgba(255, 193, 7, 0.20) !important;
+    font-weight: 500 !important;
+}
+
+/* Row-level tint for "fully received" lines (decoration-success on row) */
+.o_list_view .o_data_row.o_list_record_selected td,
+.o_list_view .o_data_row[data-tracking-status="received"] td {
+    background-color: rgba(25, 135, 84, 0.05);
+}
+
+/* ── PO Tracking Custom Buttons ──────────────────────────────── */
+.o_list_buttons .o_po_expand_all,
+.o_list_buttons .o_po_collapse_all {
+    transition: all 0.2s ease-in-out;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+.o_list_buttons .o_po_expand_all:hover {
+    background-color: #0d6efd !important;
+    color: #fff !important;
+    border-color: #0d6efd !important;
+}
+
+.o_list_buttons .o_po_collapse_all:hover {
+    background-color: #6c757d !important;
+    color: #fff !important;
+    border-color: #6c757d !important;
+}
+
+.o_list_buttons .o_po_export_excel {
+    transition: all 0.2s ease-in-out;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+.o_list_buttons .o_po_export_excel:hover {
+    background-color: #198754 !important;
+    color: #fff !important;
+    border-color: #198754 !important;
+}

@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Wizard Line — minimal form view (prevents Odoo opening a blank popup)
+         ══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_consignment_track_stock_wizard_line_form" model="ir.ui.view">
+        <field name="name">consignment.track.stock.wizard.line.form</field>
+        <field name="model">consignment.track.stock.wizard.line</field>
+        <field name="arch" type="xml">
+            <form string="Stock Line" create="false" edit="false" delete="false">
+                <group>
+                    <group string="Product">
+                        <field name="product_display_name" readonly="1"/>
+                        <field name="vendor_id"/>
+                        <field name="uom_id" readonly="1"/>
+                        <field name="price_unit" readonly="1"/>
+                    </group>
+                    <group string="Quantities">
+                        <field name="received_qty" readonly="1"/>
+                        <field name="sold_qty" readonly="1"/>
+                        <field name="already_paid_qty" readonly="1"/>
+                        <field name="payable_now" readonly="1" class="fw-bold"/>
+                    </group>
+                </group>
+                <field name="po_line_id" invisible="1"/>
+                <field name="consignment_payment_id" invisible="1"/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Track Stock Wizard — Main Form View (Dialog)
+         ══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_consignment_track_stock_wizard_form" model="ir.ui.view">
+        <field name="name">consignment.track.stock.wizard.form</field>
+        <field name="model">consignment.track.stock.wizard</field>
+        <field name="arch" type="xml">
+
+            <form string="Track Stock — التصريف تحت بضاعة (Consignment)"
+                  create="false" edit="false">
+
+                <!-- Wizard header info -->
+                <div class="o_consignment_wizard_header bg-light p-3 mb-3 rounded border">
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Purchase Order: </strong>
+                            <field name="po_name" readonly="1" nolabel="1"/>
+                        </div>
+                        <!-- <div class="col-6">
+                            <strong>Vendor: </strong>
+                            <field name="vendor_name" readonly="1" nolabel="1"/>
+                        </div> -->
+                        <div class="col-6">
+                            <strong>Vendor: </strong>
+                            <field name="vendor_name" readonly="1" nolabel="1"/>
+                            <!-- رسالة توضيحية لما في multiple vendors -->
+                            <span class="badge text-bg-info ms-2 fs-7"
+                                invisible="not has_multiple_vendors">
+                                Multiple Vendors
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <span class="badge text-bg-warning fs-6 px-3 py-2">
+                            CONSIGNMENT — التصريف تحت بضاعة
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Product lines list — includes Vendor column -->
+                <field name="line_ids" nolabel="1"
+                       mode="list"
+                       create="false"
+                       delete="false">
+                    <list string="Consignment Stock Lines"
+                          create="false"
+                          delete="false"
+                          decoration-success="payable_now &gt; 0"
+                          decoration-muted="payable_now == 0">
+                        <field name="po_line_id" column_invisible="1"/>
+                        <field name="consignment_payment_id" column_invisible="1"/>
+                        <field name="product_display_name"
+                               string="Product Selected" readonly="1"/>
+                        <!-- ★ NEW: Vendor column -->
+                        <field name="vendor_id"
+                               string="Vendor" readonly="1"/>
+                        <field name="uom_id"
+                               string="Unit" readonly="1" optional="show"/>
+                        <field name="received_qty"
+                               string="Received Qty" readonly="1"/>
+                        <field name="sold_qty"
+                               string="Sold Qty" readonly="1"/>
+                        <field name="already_paid_qty"
+                               string="Already Paid Qty" readonly="1"/>
+                        <field name="payable_now"
+                               string="Payable Now (Sold - Paid)" readonly="1"
+                               class="fw-bold"/>
+                        <field name="price_unit"
+                               string="Unit Price" readonly="1" optional="show"/>
+                    </list>
+                </field>
+
+                <!-- Legend -->
+                <div class="mt-2 mb-3 px-2">
+                    <small class="text-muted">
+                        Green = has payable units | Grey = nothing to pay |
+                        Payable Now is locked and cannot be edited
+                    </small>
+                </div>
+
+                <!-- ★ NEW: Payment Mode selector — only shown when multiple vendors exist -->
+                <div class="o_consignment_payment_mode_section border rounded p-3 mb-3 bg-white"
+                     invisible="not has_multiple_vendors">
+                    <h6 class="fw-bold mb-3">
+                        <i class="fa fa-credit-card me-2"/>
+                        Payment Options
+                    </h6>
+                    <div class="row">
+                        <div class="col-6">
+                            <field name="payment_mode" widget="radio"
+                                   options="{'horizontal': true}"/>
+                        </div>
+                        <div class="col-6" invisible="payment_mode != 'single'">
+                            <label for="selected_vendor_id" string="Select Vendor"/>
+                            <field name="selected_vendor_id"
+                                   placeholder="Choose a vendor..."
+                                   required="payment_mode == 'single'"/>
+                        </div>
+                    </div>
+                    <div class="mt-2" invisible="payment_mode != 'all'">
+                        <small class="text-info">
+                            <i class="fa fa-info-circle me-1"/>
+                            A separate bill will be created automatically for each vendor.
+                        </small>
+                    </div>
+                    <div class="mt-2" invisible="payment_mode != 'single'">
+                        <small class="text-info">
+                            <i class="fa fa-info-circle me-1"/>
+                            Only products from the selected vendor will be included in this bill.
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Hidden fields -->
+                <field name="has_payable" invisible="1"/>
+                <field name="has_multiple_vendors" invisible="1"/>
+                <field name="available_vendor_ids" invisible="1"/>
+
+                <!-- Footer buttons -->
+                <footer>
+                    <!-- Pay All Vendors button (default or when single vendor) -->
+                    <button
+                        name="action_create_payment"
+                        type="object"
+                        class="btn-primary"
+                        invisible="not has_payable or (has_multiple_vendors and payment_mode == 'single')"
+                        confirm="Create a partial vendor bill for all payable-now quantities? Quantities will be locked and cannot be changed.">
+                        <span invisible="has_multiple_vendors">
+                            PAYMENT — Sold and Unpaid Qty Only
+                        </span>
+                        <span invisible="not has_multiple_vendors or payment_mode != 'all'">
+                            PAYMENT — Pay All Vendors (separate bills)
+                        </span>
+                    </button>
+
+                    <!-- Pay Single Vendor button -->
+                    <button
+                        name="action_create_payment_single_vendor"
+                        string="PAYMENT — Pay This Vendor Only"
+                        type="object"
+                        class="btn-primary"
+                        invisible="not has_payable or not has_multiple_vendors or payment_mode != 'single'"
+                        confirm="Create a vendor bill for the selected vendor only? Quantities will be locked and cannot be changed."
+                    />
+
+                    <!-- Disabled state when nothing to pay -->
+                    <span
+                        class="btn btn-secondary disabled ms-2"
+                        invisible="has_payable"
+                        title="No new sold units to pay for.">
+                        PAYMENT — No New Sold Units
+                    </span>
+
+                    <button
+                        string="Cancel"
+                        class="btn-secondary ms-2"
+                        special="cancel"
+                    />
+                </footer>
+
+            </form>
+
+        </field>
+    </record>
+
+    <!-- Action to open the wizard -->
+    <record id="action_consignment_track_stock_wizard" model="ir.actions.act_window">
+        <field name="name">Track Stock — التصريف تحت بضاعة</field>
+        <field name="res_model">consignment.track.stock.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'dialog_size': 'large'}</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_consignment_payment_user,consignment.payment.user,model_purchase_order_line_consignment_payment,purchase.group_purchase_user,1,1,1,0
+access_consignment_payment_manager,consignment.payment.manager,model_purchase_order_line_consignment_payment,purchase.group_purchase_manager,1,1,1,1
+access_track_stock_wizard_user,track.stock.wizard.user,model_consignment_track_stock_wizard,purchase.group_purchase_user,1,1,1,1
+access_track_stock_wizard_line_user,track.stock.wizard.line.user,model_consignment_track_stock_wizard_line,purchase.group_purchase_user,1,1,1,1
+pharmacy_consignment.access_consignment_bill_pending_line,access_consignment_bill_pending_line,pharmacy_consignment.model_consignment_bill_pending_line,base.group_user,1,1,1,1

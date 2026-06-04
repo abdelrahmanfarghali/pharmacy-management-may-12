@@ -1,0 +1,178 @@
+هشرحلك كل حاجة بالتفصيل بالعربي.
+
+---
+
+## إيه اللي عملناه؟
+
+الموديول ده بيضيف نظام **التصريف تحت بضاعة (Consignment)** على أوامر الشراء في أودوو. الفكرة إن الصيدلية بتاخد البضاعة من المورد بس **مش بتدفع غير على اللي اتباع فعلاً**.
+
+---
+
+## الملفات اللي اتعملت وشغلت إيه
+
+### 1. `models/purchase_order_line_consignment.py`
+ده موديل جديد خالص اسمه `purchase.order.line.consignment.payment` — بيحفظ في الداتابيز **كام وحدة اتدفع لحد دلوقتي** لكل سطر في أمر الشراء. يعني لو عندك دواء X في PO، هيفضل يتراكم فيه: دفعة أولى 3 وحدات، دفعة تانية 4 وحدات، إلخ.
+
+### 2. `models/purchase_order.py`
+ده بيضيف على موديل `purchase.order` الموجود أصلاً في أودوو:
+- **حقل `is_consignment`**: checkbox جديد على فورم أمر الشراء
+- **`_compute_consignment_quantities`**: بيحسب تلقائياً الكميات (received / sold / paid / payable)
+- **`_get_sold_qty()`**: بيجيب كمية المبيعات من سطور Sale Orders + POS Orders
+- **`action_track_consignment_stock()`**: بيفتح الـ wizard
+
+### 3. `wizard/track_stock_wizard.py`
+ده الـ popup اللي بيظهر لما تضغط "Track Stock". فيه:
+- **`ConsignmentTrackStockWizard`**: الـ wizard الرئيسي
+- **`ConsignmentTrackStockWizardLine`**: سطر لكل منتج
+- **`action_create_payment()`**: بيعمل فاتورة مورد جزئية بالكميات المستحقة بالظبط
+
+### 4. الـ Views (XML)
+- **`purchase_order_views.xml`**: بيضيف الـ checkbox + البانر البرتقالي + زرار Track Stock على فورم PO
+- **`purchase_order_list_views.xml`**: بيضيف عمود Consignment في اللستة + فلتر في البحث
+- **`track_stock_wizard_views.xml`**: شكل الـ popup نفسه
+
+---
+
+## خطوات التنصيب والتشغيل
+
+**الخطوة 1 — حط الموديول في المكان الصح**
+```
+d:/odoo_new/odoo-18.0/custom_addons/pharmacy_consignment/
+```
+
+**الخطوة 2 — شغل أودوو مع update**
+```bash
+python odoo-bin -c odoo.conf -u pharmacy_consignment
+# أو لو بتشغله من أول
+python odoo-bin -c odoo.conf
+```
+
+**الخطوة 3 — فعّل Developer Mode**
+Settings → تحت "About" → Activate Developer Mode
+
+**الخطوة 4 — نصّب الموديول**
+Apps → ابحث عن "Pharmacy Consignment" → Install
+
+---
+
+## خطوات الـ Testing بالتفصيل
+
+### Test 1: الـ Checkbox والبانر
+
+1. روح **Purchase → Orders → Purchase Orders → New**
+2. اختار Vendor
+3. هتلاقي **Checkbox "Consignment (التصريف تحت بضاعة)"** جنب اسم المورد
+4. اضغط عليه ✅
+5. المفروض يظهر **بانر برتقالي** فوق الفورم فيه "CONSIGNMENT — التصريف تحت بضاعة"
+6. ضيف منتجات وسعر واضغط **Confirm Order**
+7. بعد الـ Confirm، جرب تشيل الـ checkbox — المفروض **مش يتغير** (read-only)
+8. افتح الـ Chatter تحت الصفحة — المفروض تلاقي رسالة "PO marked as Consignment by [اسمك] on [التاريخ]"
+
+---
+
+### Test 2: زرار Track Stock
+
+1. على نفس الـ PO المؤكد، دور على زرار **"Track Stock"** في الـ toolbar فوق
+2. اضغط عليه
+3. المفروض يفتح **Popup** فيه جدول بالمنتجات
+4. في البداية هتلاقي:
+   - Received Qty = **0** (لأنك لسه مستلتش)
+   - Sold Qty = **0**
+   - Already Paid = **0**
+   - Payable Now = **0**
+5. زرار PAYMENT المفروض يكون **رمادي معطل**
+
+---
+
+### Test 3: استلام البضاعة (Receipt)
+
+1. على الـ PO، اضغط **Receive Products**
+2. دخل الكميات اللي استلمتها (مثلاً 10 وحدات)
+3. اضغط **Validate**
+4. ارجع للـ PO واضغط Track Stock تاني
+5. دلوقتي **Received Qty = 10**
+
+---
+
+### Test 4: بيع المنتجات
+
+**من Sale Order:**
+1. روح **Sales → Orders → New**
+2. ضيف نفس المنتج اللي في الـ PO (مثلاً 7 وحدات)
+3. Confirm وعمل Delivery
+
+**أو من POS:**
+1. روح **Point of Sale → بيع** نفس المنتج
+
+بعد كده ارجع للـ PO واضغط **Track Stock**:
+- Received Qty = 10
+- Sold Qty = **7**
+- Already Paid = 0
+- Payable Now = **7** 🔒
+
+---
+
+### Test 5: عمل Payment (فاتورة جزئية)
+
+1. في الـ popup، اضغط **"PAYMENT — Sold and Unpaid Qty Only"**
+2. هيظهر confirmation dialog، اضغط OK
+3. المفروض **يفتح Vendor Bill** تلقائياً فيه:
+   - المنتج بكمية = 7 (مقفولة، مش تقدر تغيرها)
+   - السعر من الـ PO
+   - مرتبط بالـ PO في حقل Origin
+4. Post الفاتورة وادفعها
+5. ارجع للـ PO واضغط Track Stock تاني:
+   - Already Paid = **7**
+   - Payable Now = **0**
+   - الزرار رمادي تاني
+
+---
+
+### Test 6: دورة تانية (بيع أكتر)
+
+1. بيع 2 وحدة تانية من نفس المنتج
+2. Track Stock:
+   - Sold = 9
+   - Already Paid = 7
+   - Payable Now = **2** ← دفعة جديدة
+3. اضغط PAYMENT تاني → فاتورة جديدة بـ 2 فقط
+
+---
+
+### Test 7: إرجاع بضاعة غير مباعة
+
+1. روح **Inventory → Transfers**
+2. عمل Return Transfer للكميات الزيادة
+3. ارجع Track Stock → Received Qty هتنقص تلقائياً
+4. الـ Chatter في الـ PO هيتسجل فيه "Return transfer [REF] created"
+
+---
+
+### Test 8: PO عادي (Consignment = OFF)
+
+1. عمل PO جديد بدون تفعيل الـ checkbox
+2. تأكد إن زرار **Track Stock مش موجود** خالص
+3. الـ PO يشتغل عادي زي ما هو
+
+---
+
+## ملخص: هيظهر إيه فين؟
+
+| اللي ضفته | هيظهر فين |
+|---|---|
+| Checkbox Consignment | فورم الـ PO، جنب اسم المورد |
+| البانر البرتقالي | فوق فورم الـ PO لما الـ checkbox يتفعل |
+| عمود Consignment | في لستة كل أوامر الشراء |
+| فلتر Consignment | في البحث (🔍) في لستة الـ POs |
+| زرار Track Stock | في toolbar الـ PO (بس لو consignment فعال) |
+| الـ Popup | لما تضغط Track Stock |
+| فاتورة المورد الجزئية | بتتفتح تلقائي بعد PAYMENT |
+| سجلات في الـ Chatter | أسفل كل PO |
+
+---
+
+## لو في مشكلة في الـ Testing
+
+أكتر حاجة ممكن تسبب إن Sold Qty = 0 حتى بعد البيع هي إن الـ Sale Order مش confirmed أو الـ Delivery مش validated. تأكد إن:
+- Sale Order وصل لـ status = **"Sales Order"** (مش Quotation)
+- الـ Delivery اتعمله **Validate**

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Purchase Order List View — Add Consignment badge column
+         ══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_purchase_order_list_consignment" model="ir.ui.view">
+        <field name="name">purchase.order.list.consignment</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_tree"/>
+        <field name="arch" type="xml">
+
+            <!-- Add Consignment badge after the PO name/reference column -->
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="is_consignment" optional="show" string="Consignment"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         Search View — Add Consignment filter
+         Correct v18 inherit ref: purchase.view_purchase_order_filter
+         ══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_purchase_order_search_consignment" model="ir.ui.view">
+        <field name="name">purchase.order.search.consignment</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.view_purchase_order_filter"/>
+        <field name="arch" type="xml">
+
+            <!-- Append consignment filter after the last existing filter separator -->
+            <xpath expr="//search/filter[last()]" position="after">
+                <separator/>
+                <filter
+                    string="Consignment (التصريف تحت بضاعة)"
+                    name="filter_consignment"
+                    domain="[('is_consignment','=',True)]"
+                    help="Show only consignment purchase orders"
+                />
+            </xpath>
+
+            <!-- Add Group By: Consignment inside the group element -->
+            <xpath expr="//group" position="inside">
+                <filter
+                    string="Consignment"
+                    name="group_by_consignment"
+                    context="{'group_by': 'is_consignment'}"
+                />
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,224 @@
+# -*- coding: utf-8 -*-
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
+import logging
+
+_logger = logging.getLogger(__name__)
+
+
+class PurchaseOrder(models.Model):
+    _inherit = 'purchase.order'
+
+    # ── Consignment flag ──────────────────────────────────────────────────────
+    is_consignment = fields.Boolean(
+        string='Consignment (التصريف تحت بضاعة)',
+        default=False,
+        copy=False,
+        tracking=True,
+        help='When checked, this PO follows consignment terms: goods are received but '
+             'payment is made only for units actually sold.',
+    )
+
+    # ── Computed helper for banner visibility ─────────────────────────────────
+    consignment_banner_visible = fields.Boolean(
+        string='Show Consignment Banner',
+        compute='_compute_consignment_banner_visible',
+        store=False,
+    )
+
+    @api.depends('is_consignment')
+    def _compute_consignment_banner_visible(self):
+        for rec in self:
+            rec.consignment_banner_visible = rec.is_consignment
+
+    # ── Lock the checkbox once PO is confirmed ────────────────────────────────
+    def _is_consignment_editable(self):
+        self.ensure_one()
+        return self.state not in ('purchase', 'done', 'cancel')
+
+    @api.onchange('is_consignment')
+    def _onchange_is_consignment(self):
+        """Log to chatter when flag changes (before save; actual chatter on write)."""
+        pass
+
+    def write(self, vals):
+        # Log chatter message when consignment flag is toggled
+        if 'is_consignment' in vals:
+            for rec in self:
+                if rec.state in ('purchase', 'done'):
+                    raise UserError(
+                        _('The Consignment flag cannot be changed after the PO is confirmed.')
+                    )
+        result = super().write(vals)
+        if 'is_consignment' in vals:
+            for rec in self:
+                if vals['is_consignment']:
+                    msg = _('PO marked as <b>Consignment (التصريف تحت بضاعة)</b> by %s on %s.') % (
+                        self.env.user.name,
+                        fields.Date.today(),
+                    )
+                else:
+                    msg = _('Consignment flag <b>removed</b> by %s on %s.') % (
+                        self.env.user.name,
+                        fields.Date.today(),
+                    )
+                rec.message_post(body=msg)
+        return result
+
+    # ── Track Stock wizard launcher ───────────────────────────────────────────
+    def action_track_consignment_stock(self):
+        """Open the Track Stock wizard for consignment POs."""
+        self.ensure_one()
+        if not self.is_consignment:
+            raise UserError(_('Track Stock is only available for Consignment POs.'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Track Stock — التصريف تحت بضاعة'),
+            'res_model': 'consignment.track.stock.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_purchase_order_id': self.id,
+                'dialog_size': 'large',
+            },
+        }
+
+    # ── Log return transfer in chatter ────────────────────────────────────────
+    def _log_consignment_return(self, picking_ref):
+        """Called from stock.picking when a return is validated for a consignment PO."""
+        self.ensure_one()
+        msg = _(
+            'Return transfer <b>%s</b> created — Remaining Quantity updated.'
+        ) % picking_ref
+        self.message_post(body=msg)
+
+
+class PurchaseOrderLine(models.Model):
+    _inherit = 'purchase.order.line'
+
+    # ── Convenience: link to consignment payment record ───────────────────────
+    consignment_payment_ids = fields.One2many(
+        'purchase.order.line.consignment.payment',
+        'purchase_order_line_id',
+        string='Consignment Payments',
+    )
+
+    # ── Read-only computed fields used in views / reporting ───────────────────
+    consignment_received_qty = fields.Float(
+        string='Received Qty (Consignment)',
+        compute='_compute_consignment_quantities',
+        digits='Product Unit of Measure',
+    )
+    consignment_sold_qty = fields.Float(
+        string='Sold Qty (Consignment)',
+        compute='_compute_consignment_quantities',
+        digits='Product Unit of Measure',
+    )
+    consignment_paid_qty = fields.Float(
+        string='Already Paid Qty',
+        compute='_compute_consignment_quantities',
+        digits='Product Unit of Measure',
+    )
+    consignment_payable_now = fields.Float(
+        string='Payable Now',
+        compute='_compute_consignment_quantities',
+        digits='Product Unit of Measure',
+    )
+
+    @api.depends(
+        'qty_received',
+        'product_id',
+        'order_id.is_consignment',
+        'consignment_payment_ids.already_paid_qty',
+    )
+    def _compute_consignment_quantities(self):
+        for line in self:
+            if not line.order_id.is_consignment:
+                line.consignment_received_qty = 0.0
+                line.consignment_sold_qty = 0.0
+                line.consignment_paid_qty = 0.0
+                line.consignment_payable_now = 0.0
+                continue
+
+            received = line.qty_received
+            sold = line._get_sold_qty()
+            paid_rec = self.env['purchase.order.line.consignment.payment'].search(
+                [('purchase_order_line_id', '=', line.id)], limit=1
+            )
+            paid = paid_rec.already_paid_qty if paid_rec else 0.0
+            payable = max(0.0, sold - paid)
+
+            line.consignment_received_qty = received
+            line.consignment_sold_qty = sold
+            line.consignment_paid_qty = paid
+            line.consignment_payable_now = payable
+
+    def _get_sold_qty(self):
+        """
+        Compute total units sold for this product from the receiving location
+        since the PO receipt date.
+
+        Queries both sale.order.line (SO) and pos.order.line (POS).
+        """
+        self.ensure_one()
+        if not self.product_id:
+            return 0.0
+
+        # Determine the earliest receipt date for this PO
+        receipt_date = self._get_receipt_date()
+
+        product = self.product_id
+
+        # ── Sale Order lines ──────────────────────────────────────────────────
+        so_domain = [
+            ('product_id', '=', product.id),
+            ('order_id.state', 'in', ('sale', 'done')),
+        ]
+        if receipt_date:
+            so_domain.append(('order_id.date_order', '>=', receipt_date))
+
+        so_lines = self.env['sale.order.line'].search(so_domain)
+        so_qty = sum(
+            line.product_uom_qty
+            for line in so_lines
+            if line.product_uom == self.product_uom
+        )
+        # Handle UoM conversion if different
+        so_qty_converted = 0.0
+        for sol in so_lines:
+            try:
+                so_qty_converted += sol.product_uom._compute_quantity(
+                    sol.product_uom_qty, self.product_uom
+                )
+            except Exception:
+                so_qty_converted += sol.product_uom_qty
+
+        # ── POS Order lines ───────────────────────────────────────────────────
+        pos_domain = [
+            ('product_id', '=', product.id),
+            ('order_id.state', 'in', ('done', 'invoiced')),
+        ]
+        if receipt_date:
+            pos_domain.append(('order_id.date_order', '>=', receipt_date))
+
+        pos_lines = self.env['pos.order.line'].search(pos_domain)
+        pos_qty = 0.0
+        for pol in pos_lines:
+            try:
+                pos_qty += pol.product_uom_id._compute_quantity(
+                    pol.qty, self.product_uom
+                ) if pol.product_uom_id else pol.qty
+            except Exception:
+                pos_qty += pol.qty
+
+        return so_qty_converted + pos_qty
+
+    def _get_receipt_date(self):
+        """Return the earliest validated picking date for this PO."""
+        pickings = self.order_id.picking_ids.filtered(
+            lambda p: p.state == 'done'
+        )
+        if not pickings:
+            return False
+        dates = [p.date_done for p in pickings if p.date_done]
+        return min(dates) if dates else False

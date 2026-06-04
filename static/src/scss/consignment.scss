@@ -1,0 +1,60 @@
+// ── Pharmacy Consignment Module — Custom Styles ──────────────────────────────
+
+// Consignment banner on PO form
+.o_consignment_banner {
+    background-color: #fff3cd !important;
+    border: 2px solid #ffc107 !important;
+    border-radius: 6px;
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+    color: #664d03;
+}
+
+// Bill banner
+.o_consignment_bill_banner {
+    background-color: #cff4fc !important;
+    border: 1px solid #0dcaf0 !important;
+    border-radius: 6px;
+    color: #055160;
+}
+
+// Wizard header
+.o_consignment_wizard_header {
+    border-left: 4px solid #ffc107 !important;
+
+    .o_consignment_tag {
+        margin-top: 6px;
+    }
+}
+
+// Payable Now cell — make it visually stand out
+.o_consignment_section_payable {
+    background-color: #fff3cd;
+    font-weight: bold;
+}
+
+// Stock movement cells
+.o_consignment_section_stock {
+    background-color: #f0f9ff;
+}
+
+// Payment history cells
+.o_consignment_section_payment {
+    background-color: #f0fff4;
+}
+
+// Legend
+.o_consignment_legend {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+// Lock icon next to payable now
+.o_field_cell[name="payable_now"] {
+    position: relative;
+    &::after {
+        content: " 🔒";
+        font-size: 0.75em;
+        opacity: 0.6;
+    }
+}

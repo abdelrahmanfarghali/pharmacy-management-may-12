@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════
+         ACTION — Expired Medicines page (INV-UC-09 placeholder)
+         *** MUST come FIRST so the form view ref below resolves ***
+    ══════════════════════════════════════════════════════════ -->
+    <record id="action_expired_medicines_page" model="ir.actions.act_window">
+        <field name="name">Expired Medicines</field>
+        <field name="res_model">stock.quant</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('lot_id.expiration_date', '!=', False),
+                               ('location_id.usage', '=', 'internal'),
+                               ('quantity','!=', 0)]</field>
+        <field name="context">{'search_default_expired_lots': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No expired stock found.
+            </p>
+            <p>
+                Expired lots detected by the nightly job will appear here.
+                Use this page to transfer them to the Expired location.
+            </p>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         STOCK EXPIRY DETECTION — Form View (result record)
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_stock_expiry_detection_form" model="ir.ui.view">
+        <field name="name">stock.expiry.detection.form</field>
+        <field name="model">stock.expiry.detection</field>
+        <field name="arch" type="xml">
+            <form string="Expiry Detection Result" create="false" edit="false">
+                <sheet>
+                    <!-- Status banners — role="alert" required by Odoo 18 accessibility rules -->
+                    <div class="alert alert-danger o_expired_location_warning"
+                         role="alert"
+                         invisible="state in ('no_results',)">
+                        <i class="fa fa-exclamation-triangle me-2" title="Warning"/>
+                        <strong>Expired lots detected.</strong>
+                        Please review the list below and transfer stock via
+                        <strong>Inventory &#8594; Operations &#8594; Expired Medicines</strong>.
+                        No stock has been moved automatically.
+                    </div>
+                    <div class="alert alert-success"
+                         role="status"
+                         invisible="state != 'no_results'">
+                        <i class="fa fa-check-circle me-2" title="Success"/>
+                        <strong>No expired lots found</strong> during this detection run.
+                    </div>
+                    <div class="alert alert-warning"
+                         role="alert"
+                         invisible="not configuration_warnings">
+                        <i class="fa fa-warning me-2" title="Configuration Warning"/>
+                        <strong>Configuration Warning:</strong>
+                        <field name="configuration_warnings" readonly="1" nolabel="1"/>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="run_date" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Run Details">
+                            <field name="trigger_type" readonly="1"/>
+                            <field name="triggered_by" readonly="1"/>
+                            <field name="company_id" readonly="1"/>
+                            <field name="warehouse_id" readonly="1"/>
+                            <field name="state" readonly="1" widget="badge"
+                                   decoration-danger="state in ('done','warning')"
+                                   decoration-success="state == 'no_results'"/>
+                        </group>
+                        <group string="Summary">
+                            <field name="expired_lot_count" readonly="1"/>
+                            <field name="summary_note" readonly="1" nolabel="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Detected Expired Lots" name="detected_lots"
+                              invisible="expired_lot_count == 0">
+                            <field name="line_ids" readonly="1">
+                                <list decoration-danger="True">
+                                    <field name="product_id" string="Medicine"/>
+                                    <field name="lot_id" string="Lot / Serial"/>
+                                    <field name="expiry_month_display" string="Expiry (MM/YYYY)"/>
+                                    <field name="quantity" string="On-Hand Qty"/>
+                                    <field name="location_id" string="Current Location"/>
+                                    <field name="warehouse_id" string="Warehouse"/>
+                                </list>
+                            </field>
+                            <div class="mt-3">
+                                <button class="btn btn-danger"
+                                        name="%(action_expired_medicines_wizard)d"
+                                        type="action"
+                                        icon="fa-arrow-right">
+                                    Go to Expired Medicines Page 
+                                </button>
+                            </div>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         STOCK EXPIRY DETECTION — List View (history)
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_stock_expiry_detection_tree" model="ir.ui.view">
+        <field name="name">stock.expiry.detection.list</field>
+        <field name="model">stock.expiry.detection</field>
+        <field name="arch" type="xml">
+            <list string="Expiry Detection History" create="false"
+                  decoration-danger="state in ('done', 'warning')"
+                  decoration-success="state == 'no_results'">
+                <field name="run_date" string="Run Date"/>
+                <field name="trigger_type" string="Trigger"/>
+                <field name="triggered_by" string="Triggered By"/>
+                <field name="company_id" string="Company" optional="show"/>
+                <field name="warehouse_id" string="Warehouse" optional="show"/>
+                <field name="expired_lot_count" string="Expired Lots"/>
+                <field name="state" string="Status" widget="badge"
+                       decoration-danger="state in ('done','warning')"
+                       decoration-success="state == 'no_results'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         STOCK EXPIRY DETECTION — Search View
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_stock_expiry_detection_search" model="ir.ui.view">
+        <field name="name">stock.expiry.detection.search</field>
+        <field name="model">stock.expiry.detection</field>
+        <field name="arch" type="xml">
+            <search string="Search Detection Runs">
+                <field name="triggered_by"/>
+                <field name="warehouse_id"/>
+                <filter name="scheduled" string="Scheduled Runs"
+                        domain="[('trigger_type','=','scheduled')]"/>
+                <filter name="manual" string="Manual Runs"
+                        domain="[('trigger_type','=','manual')]"/>
+                <separator/>
+                <filter name="has_results" string="Found Expired Lots"
+                        domain="[('expired_lot_count','>',0)]"/>
+                <filter name="no_results" string="No Results"
+                        domain="[('state','=','no_results')]"/>
+                <filter name="warnings" string="Has Config Warnings"
+                        domain="[('state','=','warning')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_by_warehouse" string="Warehouse"
+                            context="{'group_by':'warehouse_id'}"/>
+                    <filter name="group_by_trigger" string="Trigger Type"
+                            context="{'group_by':'trigger_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         ACTION — Expiry Detection History
+    ══════════════════════════════════════════════════════════ -->
+    <record id="action_stock_expiry_detection_history" model="ir.actions.act_window">
+        <field name="name">Expiry Detection History</field>
+        <field name="res_model">stock.expiry.detection</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_stock_expiry_detection_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No expiry detection runs yet.
+            </p>
+            <p>
+                Use <b>Inventory &#8594; Operations &#8594; Run Expiry Detection</b> to trigger
+                an on-demand scan, or wait for the nightly scheduled job.
+            </p>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         WIZARD — Run Expiry Detection form view
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_stock_expiry_detection_wizard_form" model="ir.ui.view">
+        <field name="name">stock.expiry.detection.wizard.form</field>
+        <field name="model">stock.expiry.detection.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Run Expiry Detection">
+                <sheet>
+                    <div class="alert alert-info" role="status">
+                        <i class="fa fa-info-circle me-2" title="Information"/>
+                        <strong>Detection only</strong> — This scan will detect expired lots
+                        and send notifications, but will <strong>not move any stock</strong>.
+                        To transfer detected lots, use the
+                        <strong>Expired Medicines page</strong> after the scan.
+                    </div>
+                    <group string="Scan Scope">
+                        <field name="company_id"/>
+                        <field name="scan_all_warehouses"/>
+                        <field name="warehouse_id"
+                               invisible="scan_all_warehouses == True"
+                               required="scan_all_warehouses == False"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_run_detection" type="object"
+                            string="Run Expiry Detection"
+                            class="btn-danger"
+                            icon="fa-search"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         ACTION — Launch wizard
+    ══════════════════════════════════════════════════════════ -->
+    <record id="action_run_expiry_detection_wizard" model="ir.actions.act_window">
+        <field name="name">Run Expiry Detection</field>
+        <field name="res_model">stock.expiry.detection.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_stock_expiry_detection_wizard_form"/>
+        <field name="target">new</field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         MENU ITEMS — Inventory > Operations
+    ══════════════════════════════════════════════════════════ -->
+    <menuitem
+        id="menu_run_expiry_detection"
+        name="Run Expiry Detection"
+        parent="stock.menu_stock_warehouse_mgmt"
+        action="action_run_expiry_detection_wizard"
+        sequence="25"
+        groups="stock.group_stock_manager"/>
+
+    <menuitem
+        id="menu_expiry_detection_history"
+        name="Expiry Detection History"
+        parent="stock.menu_stock_warehouse_mgmt"
+        action="action_stock_expiry_detection_history"
+        sequence="26"
+        groups="stock.group_stock_manager"/>
+
+    <!-- <menuitem
+        id="menu_expired_medicines_page"
+        name="Expired Medicines"
+        parent="stock.menu_stock_warehouse_mgmt"
+        action="action_expired_medicines_page"
+        sequence="27"
+        groups="stock.group_stock_manager"/> -->
+
+</odoo>

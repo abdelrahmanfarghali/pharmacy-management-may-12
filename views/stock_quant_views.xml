@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════
+         STOCK QUANT — Search View: "Expired Stock" filter
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_stock_quant_search_expired" model="ir.ui.view">
+        <field name="name">stock.quant.search.expired</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.quant_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+
+                <separator/>
+
+                <filter
+                    name="expired_stock"
+                    string="Expired Stock"
+                    domain="[('is_expired_stock', '=', True)]"
+                    help="Show only stock quantities sitting in Expired quarantine locations"/>
+
+                <filter
+                    name="non_expired_stock"
+                    string="Active Stock (excl. Expired)"
+                    domain="[('is_expired_stock', '=', False)]"
+                    help="Show only active stock, excluding Expired locations"/>
+
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════
+         STOCK QUANT — Tree View: highlight expired quants in red
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_stock_quant_tree_expired" model="ir.ui.view">
+        <field name="name">stock.quant.tree.expired</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.view_stock_quant_tree"/>
+        <field name="arch" type="xml">
+            <field name="quantity" position="attributes">
+                <attribute name="decoration-danger">is_expired_stock == True</attribute>
+            </field>
+            <field name="quantity" position="after">
+                <field name="is_expired_stock" optional="show" string="Expired"
+                       widget="boolean_favorite"
+                       decoration-danger="is_expired_stock == True"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

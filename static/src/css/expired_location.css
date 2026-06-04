@@ -1,0 +1,97 @@
+/* ══════════════════════════════════════════════════════════════
+   pharmacy_expired_location — Backend CSS
+   Red visual indicators for Expired location type
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Expired badge in location list ─────────────────────────── */
+.o_field_widget[name="usage"] .badge[data-value="expired"],
+.o_list_view td .badge:has-text("Expired"),
+.o_data_row .o_field_badge.text-bg-danger {
+    background-color: #dc3545 !important;
+    color: #fff !important;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+/* ── Expired stat button on product form ─────────────────────── */
+.o_expired_qty_button .o_stat_info .o_field_widget,
+.o_expired_qty_button .o_stat_value {
+    color: #dc3545 !important;
+    font-weight: 700;
+}
+
+.o_expired_qty_button .o_stat_text {
+    color: #dc3545 !important;
+}
+
+.o_expired_qty_button .fa {
+    color: #dc3545 !important;
+}
+
+/* ── Warning banner in picking form ─────────────────────────── */
+.o_expired_location_warning {
+    border-left: 4px solid #dc3545;
+    background-color: #fff5f5;
+    color: #721c24;
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+}
+
+/* ── Rows in tree views where expired stock exists ───────────── */
+.o_data_row.o_expired_row td {
+    background-color: rgba(220, 53, 69, 0.06);
+}
+
+/* ── Red quantity text for expired quants ───────────────────── */
+.o_list_view .o_data_row .text-danger {
+    color: #dc3545 !important;
+    font-weight: 600;
+}
+
+/* ── Expired location type selection option highlight ────────── */
+.o_field_selection option[value="expired"] {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SC2-UC-05 — Expired Medicines Page Styles
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Counter cards row ───────────────────────────────────────── */
+.o_expired_counter_card {
+    min-width: 80px;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+/* ── Expired row highlight (red) ─────────────────────────────── */
+.o_list_view .o_data_row[class*="decoration-danger"] td {
+    background-color: rgba(220, 53, 69, 0.08) !important;
+}
+
+/* ── Near-expiry row highlight (amber) ───────────────────────── */
+.o_list_view .o_data_row[class*="decoration-warning"] td {
+    background-color: rgba(255, 193, 7, 0.10) !important;
+}
+
+/* ── Near-expiry checkbox disabled visual ────────────────────── */
+.o_list_view .o_data_row[class*="decoration-warning"] .o_field_boolean input {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+/* ── Transfer button prominence ─────────────────────────────── */
+.o_form_view .modal-footer .btn-danger,
+.o_form_view footer .btn-danger {
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+/* ── MM/YYYY expiry field hint ───────────────────────────────── */
+.o_field_widget[name="expiry_month_year"] input {
+    font-family: monospace;
+    letter-spacing: 0.05em;
+}

@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════════════════════════════════════════════════
+         SC2-UC-05 — Expired Medicines Page (Wizard Form View)
+         Main page: list of expired lots + bulk transfer action
+    ══════════════════════════════════════════════════════════ -->
+    <record id="view_expired_medicines_wizard_form" model="ir.ui.view">
+        <field name="name">pharmacy.expired.medicines.wizard.form</field>
+        <field name="model">pharmacy.expired.medicines.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Expired Medicines — الأدوية المنتهية" create="false">
+                <sheet>
+
+                    <!-- ── Critical safety banner ─────────────────────────── -->
+                    <div class="alert alert-danger o_expired_location_warning" role="alert">
+                        <i class="fa fa-exclamation-triangle me-2" title="Warning"/>
+                        <strong>PATIENT SAFETY:</strong>
+                        Expired medicines must be transferred to the Expired quarantine
+                        location and removed from active stock immediately.
+                        Select lots below and click <strong>Transfer Selected</strong>.
+                    </div>
+
+                    <!-- ── Filter tab bar ──────────────────────────────────── -->
+                    <div class="o_expired_tab_bar d-flex gap-2 mb-3 flex-wrap">
+
+                        <button name="action_refresh"
+                                type="object"
+                                class="btn btn-sm btn-outline-secondary ms-auto"
+                                icon="fa-refresh"
+                                title="Refresh list from database">
+                            ↻ Refresh
+                        </button>
+                    <button name="action_transfer_selected"
+                    type="object"
+                    string="Transfer Selected"
+                    class="btn btn-danger"
+                    icon="fa-exchange"/>
+                    </div>
+
+                    <!-- ── Counters row ────────────────────────────────────── -->
+                    <div class="row mb-3">
+                        <div class="col-2">
+                            <button name="action_show_all"
+                                    type="object"
+                                    class="btn btn-secondary w-100">
+                                All
+                            </button>
+                        </div>
+                        <div class="col-2">
+                            <button name="action_show_expired"
+                                    type="object"
+                                    class="btn btn-danger w-100">
+                                <field name="total_expired" readonly="1"/>
+                                <br/>
+                                Expired
+                            </button>
+                        </div>
+
+                        <div class="col-2">
+                            <button name="action_show_30"
+                                    type="object"
+                                    class="btn btn-warning w-100">
+                                <field name="total_near_30" readonly="1"/>
+                                <br/>
+                                30 Days
+                            </button>
+                        </div>
+
+                        <div class="col-2">
+                            <button name="action_show_60"
+                                    type="object"
+                                    class="btn btn-warning w-100">
+                                <field name="total_near_60" readonly="1"/>
+                                <br/>
+                                60 Days
+                            </button>
+                        </div>
+
+                        <div class="col-2">
+                            <button name="action_show_90"
+                                    type="object"
+                                    class="btn btn-warning w-100">
+                                <field name="total_near_90" readonly="1"/>
+                                <br/>
+                                90 Days
+                            </button>
+                        </div>
+
+                    </div>
+                    <!-- <div class="row mb-3">
+                        <div class="col-3">
+                            <div class="o_expired_counter_card bg-danger text-white rounded p-2 text-center">
+                                <div class="fw-bold fs-4">
+                                    <field name="total_expired" readonly="1" nolabel="1"/>
+                                </div>
+                                <div class="small">Expired (منتهية)</div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="o_expired_counter_card bg-warning text-dark rounded p-2 text-center">
+                                <div class="fw-bold fs-4">
+                                    <field name="total_near_30" readonly="1" nolabel="1"/>
+                                </div>
+                                <div class="small">30 Days</div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="o_expired_counter_card bg-warning text-dark rounded p-2 text-center">
+                                <div class="fw-bold fs-4">
+                                    <field name="total_near_60" readonly="1" />
+                                </div>
+                                <div class="small">60 Days</div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="o_expired_counter_card bg-warning text-dark rounded p-2 text-center">
+                                <div class="fw-bold fs-4">
+                                    <field name="total_near_90" readonly="1" />
+                                </div>
+                                <div class="small">90 Days</div>
+                            </div>
+                        </div>
+                    </div> -->
+
+                    <!-- ── Lines list ──────────────────────────────────────── -->
+                    <field name="line_ids" nolabel="1">
+                        <list
+                            string="Expired Medicines"
+                            create="false"
+                            delete="false"
+                            decoration-danger="expiry_category == 'expired'"
+                            decoration-warning="expiry_category in ('near_30','near_60','near_90')"
+                            editable="bottom">
+
+                            <!-- تحويل checkbox — disabled for near-expiry -->
+                            <field name="expiry_category" column_invisible="1"/>
+                            <field name="selected"
+                                   string="transformation ☑"
+                                   widget="boolean_toggle"
+                                   readonly="expiry_category != 'expired'"/>
+
+                            <field name="barcode" string="Barcode" readonly="1" optional="show"/>
+                            <field name="product_id" string="اسم الدواء" readonly="1"/>
+                            <field name="lot_id" string="Lot / Serial" readonly="1"/>
+                            <field name="expiry_display" string="تاريخ الصالحية" readonly="1"/>
+                            <field name="qty_boxes" string="عدد العلب" readonly="1"/>
+                            <field name="qty_units" string="عدد الوحدات" readonly="1" optional="show"/>
+                            <field name="location_id" string="المخزن" readonly="1"/>
+
+                            <!-- Near-expiry badge -->
+                            <field name="expiry_category"
+                                   string="Status"
+                                   widget="badge"
+                                   decoration-danger="expiry_category == 'expired'"
+                                   decoration-warning="expiry_category in ('near_30','near_60','near_90')"
+                                   optional="show"/>
+
+                        </list>
+                    </field>
+
+                    <!-- ── Selection count + Transfer button ───────────────── -->
+                    <div class="d-flex align-items-center gap-3 mt-3">
+
+                        <!-- Select all / Deselect all -->
+                        <button name="action_select_all"
+                                type="object"
+                                class="btn btn-sm btn-outline-danger"
+                                
+                                string = "Select All Expired"/>
+                       
+                        <button name="action_deselect_all"
+                                type="object"
+                                class="btn btn-sm btn-outline-secondary"
+                              
+                                string="Deselect All"
+                                />
+                            
+                        
+
+                        <span class="ms-auto text-muted small">
+                            <field name="selected_count" readonly="1" />
+                            lot(s) selected
+                        </span>
+
+                    </div>
+
+                </sheet>
+
+                <!-- ── Footer: Transfer action ──────────────────────────── -->
+                <footer>
+                    <button name="action_transfer_selected"
+                            type="object"
+                            string="⚠ Transfer Selected "
+                            class="btn-danger"
+                            icon="fa-arrow-right"
+                            confirm="You are about to transfer the selected expired medicine lot(s) to the Expired location. This action cannot be undone. Confirm?"
+                            invisible ="selected_count, '=', 0"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+
+            </form>
+        </field>
+    </record>
+
+
+    <!-- ══════════════════════════════════════════════════════════
+         ACTION — Open Expired Medicines Page
+    ══════════════════════════════════════════════════════════ -->
+    <record id="action_expired_medicines_wizard" model="ir.actions.act_window">
+        <field name="name">Expired Medicines — الأدوية المنتهية</field>
+        <field name="res_model">pharmacy.expired.medicines.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_expired_medicines_wizard_form"/>
+        <field name="target">current</field>
+        <field name="context">{'create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No expired medicines found.
+            </p>
+            <p>All lots with expired dates that are still in normal stock locations will appear here.</p>
+        </field>
+    </record>
+
+
+    <!-- ══════════════════════════════════════════════════════════
+         MENU ITEM — Inventory > Operations > Expired Medicines
+         Replaces the placeholder action from UC-01/02
+    ══════════════════════════════════════════════════════════ -->
+    <menuitem
+        id="menu_expired_medicines_page_v2"
+        name="Expired Medicines Page"
+        parent="stock.menu_stock_warehouse_mgmt"
+        action="action_expired_medicines_wizard"
+        sequence="28"
+        groups="stock.group_stock_manager"/>
+
+</odoo>
